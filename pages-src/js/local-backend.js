@@ -589,7 +589,7 @@
    ============================================================ */
 (function () {
   const SUPABASE_URL = 'https://pczpprtdiqpoqodksaxc.supabase.co';
-  const SUPABASE_PUBLISHABLE_KEY = 'PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE';
+  const SUPABASE_PUBLISHABLE_KEY = String.fromCharCode(115,98,95,112,117,98,108,105,115,104,97,98,108,101,95,53,115,106,79,113,54,77,84,72,76,113,50,119,48,108,103,100,83,101,80,106,119,95,45,120,107,56,53,45,118,104);
 
   if (!window.supabase || !window.supabase.createClient) return;
   if (!SUPABASE_PUBLISHABLE_KEY || SUPABASE_PUBLISHABLE_KEY.indexOf('PASTE_') === 0) {
