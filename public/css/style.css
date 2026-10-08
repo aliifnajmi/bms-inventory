@@ -561,3 +561,70 @@ button, .btn, .icon-btn, .nav a { touch-action: manipulation; }
     scroll-behavior: auto !important;
   }
 }
+
+
+/* ============================================================
+   DASHBOARD — mobile-first refinement
+   ============================================================ */
+.dashboard-page { width: 100%; min-width: 0; }
+.dashboard-toolbar {
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; margin:0 0 14px;
+}
+.dashboard-toolbar .report-actions {
+  display:flex; flex-wrap:wrap; gap:8px; margin-left:auto;
+}
+.dashboard-toolbar .btn { white-space:nowrap; }
+
+@media (max-width: 900px) {
+  .dashboard-toolbar {
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .dashboard-toolbar .report-actions {
+    width:100%;
+    margin-left:0;
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .dashboard-toolbar .btn { width:100%; justify-content:center; }
+  .dashboard-page .grid-2 { grid-template-columns:1fr; gap:12px; }
+  .dashboard-page .card { min-width:0; }
+  .dashboard-page .chart-box { min-height:220px; overflow:hidden; }
+  .dashboard-page .table-wrap { width:100%; max-width:100%; overflow-x:auto; }
+}
+
+@media (max-width: 560px) {
+  .dashboard-page .stats {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+  }
+  .dashboard-page .stat {
+    min-height:82px;
+    padding:10px;
+    text-align:left;
+  }
+  .dashboard-page .stat .v { font-size:20px; }
+  .dashboard-page .stat .ic-wrap {
+    width:34px; height:34px; flex:0 0 34px;
+  }
+  .dashboard-page .quick-actions {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+  }
+  .dashboard-page .qa {
+    min-height:88px;
+    padding:10px 6px;
+    line-height:1.2;
+  }
+  .dashboard-page .card-head {
+    padding:13px 14px;
+  }
+  .dashboard-page .card-head h2 { font-size:14px; }
+  .dashboard-page .card-head p { font-size:11px; line-height:1.35; }
+  .dashboard-page .card-body { padding:12px 10px; }
+  .dashboard-page .chart-box { min-height:200px; }
+  .dashboard-toolbar .report-actions {
+    grid-template-columns:1fr;
+  }
+}
