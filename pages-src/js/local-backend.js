@@ -17,6 +17,10 @@
   const LS_KEY = 'bms-ims-local-v1';
   const VERSION = '1.0.0';
 
+  // The demo dataset is inlined at build time by scripts/build-pages.js
+  // (it replaces the placeholder below with JSON generated from seed.js).
+  const SEED = /*__BMS_IMS_SEED__*/ null;
+
   let db = null; // { categories: [], items: [], transactions: [] }
   let seedData = null; // pristine demo dataset, used by /api/reset
   let ready = null; // load promise
@@ -92,9 +96,9 @@
         db = JSON.parse(raw);
         return;
       }
-      const res = await realFetch('data/seed.json');
-      seedData = await res.json();
-      db = clone(seedData);
+      if (!SEED) throw new Error('Demo dataset is not embedded — run: npm run build:pages');
+      seedData = SEED;
+      db = clone(SEED);
       save();
     })();
     return ready;

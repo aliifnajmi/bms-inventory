@@ -173,17 +173,18 @@ via GitHub Pages:
   transactions, Stock Out is still blocked above available stock, etc.
 - Data is stored **only in the visitor's browser** (per device/browser).
   Use Settings → **Reset Demo Data** to restore the original dataset.
-- The demo dataset in `docs/data/seed.json` is generated from `seed.js`, so it
-  never drifts from the server version.
+- The demo dataset is generated from `seed.js` and **inlined into
+  `docs/js/local-backend.js`** at build time, so it never drifts from the
+  server version and the site works from any base path.
+- GitHub Pages serves the repository root: the root `index.html` is a generated
+  entry point that loads the app (which lives in `docs/`). The standalone
+  `docs/index.html` works too (`/docs/`).
 
 Rebuild the Pages site after changing the frontend or seed data:
 
 ```bash
-npm run build:pages    # regenerates docs/ from public/ + pages-src/ + seed.js
+npm run build:pages    # regenerates docs/ + root index.html from public/ + pages-src/ + seed.js
 ```
-
-Pages is configured to serve the `docs/` folder of this branch. After merging
-to `main`, switch the Pages source to `main` → `/docs` (Settings → Pages).
 
 ## Limitations of this version
 
