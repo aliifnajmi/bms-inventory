@@ -509,41 +509,43 @@ async function renderDashboard() {
     : emptyRow(6, 'No transactions yet.');
 
   const html = `
-    <div class="quick-actions">
-      ${actions
-        .map(
-          (a, i) => `<button class="qa" data-qa="${i}">
-            <span class="qa-ic" style="background:${a.color}">${icon(a.ic, 21)}</span>${esc(a.label)}
-          </button>`
-        )
-        .join('')}
-    </div>
+    <div class="dashboard-page">
+      <div class="dashboard-toolbar">
+        <div>
+          <div class="section-title" style="margin-top:0">Quick Actions</div>
+          <p class="muted">Common BMS inventory operations</p>
+        </div>
+        <div class="report-actions">
+          <button class="btn" id="btnDashboardExcel">${icon('file', 16)} Generate Excel</button>
+          <button class="btn btn-primary" id="btnDashboardPdf">${icon('file', 16)} Generate PDF</button>
+        </div>
+      </div>
 
-    <div class="section-title">Overview</div>
-    <div class="stats">
-      ${stats
-        .map(
-          (s, i) => `<button class="stat" data-stat="${i}">
-            <span class="ic-wrap" style="background:${s.bg};color:${s.color}">${icon(s.ic, 22)}</span>
-            <span><span class="v">${s.value}</span><span class="l" style="display:block">${esc(s.label)}</span></span>
-          </button>`
-        )
-        .join('')}
-    </div>
+      <div class="quick-actions">
+        ${actions.map((a, i) => `<button class="qa" data-qa="${i}">
+          <span class="qa-ic" style="background:${a.color}">${icon(a.ic, 21)}</span>${esc(a.label)}
+        </button>`).join('')}
+      </div>
 
-    <div class="grid-2">
-      <div class="card">
+      <div class="section-title">Overview</div>
+      <div class="stats">
+        ${stats.map((s, i) => `<button class="stat" data-stat="${i}">
+          <span class="ic-wrap" style="background:${s.bg};color:${s.color}">${icon(s.ic, 22)}</span>
+          <span><span class="v">${s.value}</span><span class="l" style="display:block">${esc(s.label)}</span></span>
+        </button>`).join('')}
+      </div>
+
+      <div class="card dashboard-full-card">
         <div class="card-head"><h2>${icon('chart', 17)} Stock Overview</h2><p>Total received vs issued vs current balance (all items)</p></div>
         <div class="card-body chart-box" id="chartOverview"></div>
       </div>
-      <div class="card">
+
+      <div class="card dashboard-full-card">
         <div class="card-head"><h2>${icon('layers', 17)} Inventory by Category</h2><p>Current stock quantity per category</p></div>
         <div class="card-body chart-box" id="chartCategory"></div>
       </div>
-    </div>
 
-    <div class="grid-2">
-      <div class="card">
+      <div class="card dashboard-full-card">
         <div class="card-head"><h2>${icon('alert', 17)} Low Stock Items</h2><p>Items at or below minimum stock level</p></div>
         <div class="table-wrap">
           <table class="data">
@@ -552,7 +554,8 @@ async function renderDashboard() {
           </table>
         </div>
       </div>
-      <div class="card">
+
+      <div class="card dashboard-full-card">
         <div class="card-head"><h2>${icon('list', 17)} Recent Transactions</h2><p>Latest 10 stock movements</p></div>
         <div class="table-wrap">
           <table class="data">
@@ -562,6 +565,8 @@ async function renderDashboard() {
         </div>
       </div>
     </div>`;
+
+
 
   return {
     html,
@@ -580,6 +585,62 @@ async function renderDashboard() {
         $('#chartCategory'),
         d.by_category.map((c) => ({ label: c.category, value: c.total_stock }))
       );
+
+      const exportRows = {
+        overview: [
+          ['Metric', 'Value'],
+          ['Total Items', d.total_items],
+          ['Total Stock', d.total_stock],
+          ['Low Stock', d.low_stock_count],
+          ['Out of Stock', d.out_of_stock_count],
+          ['Stock In Today', d.stock_in_today],
+          ['Stock Out Today', d.stock_out_today],
+        ],
+        low: [
+          ['Item Code', 'Item Name', 'Current Stock', 'Minimum Stock', 'Status'],
+          ...d.low_stock_items.map(i => [i.item_code, i.item_name, i.balance, i.minimum_stock, i.status])
+        ],
+        transactions: [
+          ['Date', 'Transaction ID', 'Type', 'Item Code', 'Item Name', 'Quantity', 'User'],
+          ...d.recent_transactions.map(t => [
+            t.transaction_date, t.transaction_id, t.transaction_type, t.item_code, t.item_name,
+            t.transaction_type === 'STOCK_OUT' ? -Number(t.quantity) : Number(t.quantity), t.user || ''
+          ])
+        ]
+      };
+
+      $('#btnDashboardExcel').onclick = () => {
+        try {
+          if (!window.XLSX) throw new Error('Excel library is not loaded. Please refresh the page.');
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(exportRows.overview), 'Overview');
+          XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(exportRows.low), 'Low Stock');
+          XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(exportRows.transactions), 'Transactions');
+          XLSX.writeFile(wb, `bms-dashboard-report-${todayStr()}.xlsx`);
+          toast('Excel report generated.');
+        } catch (e) { toast(e.message, 'error'); }
+      };
+
+      $('#btnDashboardPdf').onclick = () => {
+        try {
+          if (!window.jspdf?.jsPDF) throw new Error('PDF library is not loaded. Please refresh the page.');
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+          doc.setFontSize(18);
+          doc.text('BMS IMS — Dashboard Report', 14, 16);
+          doc.setFontSize(9);
+          doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 23);
+          doc.autoTable({ startY: 29, head: [exportRows.overview[0]], body: exportRows.overview.slice(1), theme: 'grid', styles: { fontSize: 9 }, headStyles: { fillColor: [13, 36, 51] } });
+          let y = doc.lastAutoTable.finalY + 10;
+          doc.setFontSize(13); doc.text('Low Stock Items', 14, y); y += 5;
+          doc.autoTable({ startY: y, head: [exportRows.low[0]], body: exportRows.low.slice(1), theme: 'grid', styles: { fontSize: 8 }, headStyles: { fillColor: [13, 36, 51] } });
+          y = doc.lastAutoTable.finalY + 10;
+          doc.setFontSize(13); doc.text('Recent Transactions', 14, y); y += 5;
+          doc.autoTable({ startY: y, head: [exportRows.transactions[0]], body: exportRows.transactions.slice(1), theme: 'grid', styles: { fontSize: 7 }, headStyles: { fillColor: [13, 36, 51] } });
+          doc.save(`bms-dashboard-report-${todayStr()}.pdf`);
+          toast('PDF report generated.');
+        } catch (e) { toast(e.message, 'error'); }
+      };
     },
   };
 }
