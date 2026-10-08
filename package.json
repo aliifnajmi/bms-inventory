@@ -1,0 +1,15 @@
+{
+  "name": "bms-ims",
+  "version": "1.0.0",
+  "description": "BMS Inventory Management System — Building Management System Inventory & Stock Control",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.js",
+    "start:reset": "node --disable-warning=ExperimentalWarning server.js --reset",
+    "test": "node test/smoke-test.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "license": "MIT"
+}
