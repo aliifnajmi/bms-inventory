@@ -455,6 +455,126 @@ async function router() {
   window.scrollTo(0, 0);
 }
 
+/* ---------- report exports ---------- */
+function dashboardCsvFilename() { return `bms-dashboard-report-${todayStr()}.csv`; }
+
+function exportDashboardCsv(d) {
+  const rows = [
+    ['Metric','Value'],
+    ['Total Items', d.total_items],
+    ['Total Stock', d.total_stock],
+    ['Low Stock', d.low_stock_count],
+    ['Out of Stock', d.out_of_stock_count],
+    ['Stock In Today', d.stock_in_today],
+    ['Stock Out Today', d.stock_out_today],
+    [],
+    ['LOW STOCK ITEMS'],
+    ['Item Code','Item Name','Current Stock','Minimum Stock','Status'],
+    ...d.low_stock_items.map(i => [i.item_code,i.item_name,i.balance,i.minimum_stock,i.status]),
+    [],
+    ['RECENT TRANSACTIONS'],
+    ['Date','Transaction ID','Type','Item Code','Item Name','Quantity','User'],
+    ...d.recent_transactions.map(t => [
+      t.transaction_date,t.transaction_id,t.transaction_type,t.item_code,t.item_name,
+      t.transaction_type === 'STOCK_OUT' ? -Number(t.quantity) : Number(t.quantity),t.user || ''
+    ])
+  ];
+  const escCsv = v => {
+    if (v === null || v === undefined) return '';
+    const x = String(v);
+    return /[",\n]/.test(x) ? '"' + x.replace(/"/g,'""') + '"' : x;
+  };
+  const csv = rows.map(row => row.map(escCsv).join(',')).join('\r\n');
+  const blob = new Blob(['\\uFEFF' + csv], {type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=dashboardCsvFilename();
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  toast('Dashboard CSV report generated.');
+}
+
+function exportDashboardExcel(d) {
+  if (!window.XLSX) return exportDashboardCsv(d);
+  const overview = [
+    ['BMS IMS — Dashboard Report'],
+    ['Generated', new Date().toLocaleString()],
+    [],
+    ['Metric','Value'],
+    ['Total Items', d.total_items],
+    ['Total Stock', d.total_stock],
+    ['Low Stock', d.low_stock_count],
+    ['Out of Stock', d.out_of_stock_count],
+    ['Stock In Today', d.stock_in_today],
+    ['Stock Out Today', d.stock_out_today],
+  ];
+  const low = [
+    ['Item Code','Item Name','Current Stock','Minimum Stock','Status'],
+    ...d.low_stock_items.map(i=>[i.item_code,i.item_name,i.balance,i.minimum_stock,i.status])
+  ];
+  const txns = [
+    ['Date','Transaction ID','Type','Item Code','Item Name','Quantity','User'],
+    ...d.recent_transactions.map(t=>[
+      t.transaction_date,t.transaction_id,t.transaction_type,t.item_code,t.item_name,
+      t.transaction_type === 'STOCK_OUT' ? -Number(t.quantity) : Number(t.quantity),t.user || ''
+    ])
+  ];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(overview),'Overview');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(low),'Low Stock');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(txns),'Transactions');
+  XLSX.writeFile(wb,`bms-dashboard-report-${todayStr()}.xlsx`);
+  toast('Dashboard Excel report generated.');
+}
+
+function exportDashboardPdf(d) {
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    toast('PDF library is not loaded. Please refresh and try again.','error');
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const generated=new Date().toLocaleString();
+  doc.setFontSize(18); doc.text('BMS IMS — Dashboard Report',14,18);
+  doc.setFontSize(9); doc.text(`Generated: ${generated}`,14,25);
+  doc.setFontSize(11); doc.text('Inventory Overview',14,35);
+  doc.autoTable({
+    startY:39,
+    head:[['Metric','Value']],
+    body:[
+      ['Total Items',d.total_items],
+      ['Total Stock',d.total_stock],
+      ['Low Stock',d.low_stock_count],
+      ['Out of Stock',d.out_of_stock_count],
+      ['Stock In Today',d.stock_in_today],
+      ['Stock Out Today',d.stock_out_today]
+    ],
+    theme:'grid',
+    styles:{fontSize:9,cellPadding:2.5}
+  });
+  let y=doc.lastAutoTable.finalY+10;
+  doc.setFontSize(11); doc.text('Low Stock Items',14,y);
+  doc.autoTable({
+    startY:y+4,
+    head:[['Item Code','Item Name','Current','Minimum','Status']],
+    body:d.low_stock_items.map(i=>[i.item_code,i.item_name,i.balance,i.minimum_stock,i.status]),
+    theme:'grid', styles:{fontSize:8,cellPadding:2}, headStyles:{fillColor:[13,36,51]}
+  });
+  y=doc.lastAutoTable.finalY+10;
+  doc.setFontSize(11); doc.text('Recent Transactions',14,y);
+  doc.autoTable({
+    startY:y+4,
+    head:[['Date','Txn ID','Type','Item','Qty','User']],
+    body:d.recent_transactions.map(t=>[
+      t.transaction_date,t.transaction_id,t.transaction_type,t.item_code,
+      t.transaction_type==='STOCK_OUT' ? -Number(t.quantity) : Number(t.quantity),t.user||'—'
+    ]),
+    theme:'grid', styles:{fontSize:7.5,cellPadding:2}, headStyles:{fillColor:[13,36,51]}
+  });
+  doc.save(`bms-dashboard-report-${todayStr()}.pdf`);
+  toast('Dashboard PDF report generated.');
+}
+
 /* ============================================================
    DASHBOARD
    ============================================================ */
@@ -566,7 +686,7 @@ async function renderDashboard() {
   return {
     html,
     bind: () => {
-      $$('[data-qa]').forEach((b) => (b.onclick = actions[Number(b.dataset.qa)].fn));
+      $('#btnDashboardPdf').onclick = () => exportDashboardPdf(d);\n      $('#btnDashboardExcel').onclick = () => exportDashboardExcel(d);\n      $('[data-qa]').forEach((b) => (b.onclick = actions[Number(b.dataset.qa)].fn));
       $$('[data-stat]').forEach((b) => {
         const s = stats[Number(b.dataset.stat)];
         b.onclick = typeof s.go === 'function' ? s.go : () => { location.hash = s.go; };
