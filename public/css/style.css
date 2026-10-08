@@ -362,3 +362,202 @@ td.empty, .empty { text-align: center; color: var(--muted); padding: 34px 16px !
   .sidebar, .topbar, .footer, .toolbar-actions, .menu-btn { display: none !important; }
   .main { margin-left: 0; }
 }
+
+
+/* ============ mobile-first enhancements ============ */
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button, .btn, .icon-btn, .nav a { touch-action: manipulation; }
+
+@media (max-width: 900px) {
+  .content { padding: 12px; }
+  .card { margin-bottom: 12px; border-radius: 10px; }
+  .card-head { padding: 13px 14px; }
+  .card-body { padding: 14px; }
+  .card-foot { padding: 9px 14px; }
+
+  .topbar {
+    min-height: 58px;
+    padding: 9px 12px;
+    gap: 10px;
+  }
+  .topbar h2 {
+    min-width: 0;
+    max-width: calc(100vw - 125px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 16px;
+  }
+  .topbar-user .avatar { width: 34px; height: 34px; }
+  .menu-btn { width: 40px; height: 40px; }
+
+  .toolbar {
+    padding: 12px 14px;
+    gap: 8px;
+  }
+  .toolbar .search-box {
+    flex: 1 1 100%;
+    max-width: none;
+    min-height: 44px;
+  }
+  .toolbar .search-box input {
+    font-size: 16px;
+    min-height: 42px;
+  }
+  .toolbar select {
+    flex: 1 1 140px;
+    max-width: none;
+    min-height: 44px;
+    font-size: 15px;
+  }
+  .toolbar-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .btn {
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+  .btn-sm {
+    min-height: 40px;
+    padding: 8px 12px;
+  }
+  .icon-btn {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .form-grid { grid-template-columns: 1fr; gap: 12px; }
+  .field input, .field select, .field textarea {
+    min-height: 44px;
+    font-size: 16px;
+  }
+  .field textarea { min-height: 92px; }
+  .form-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .form-actions .btn { width: 100%; }
+
+  .table-wrap {
+    margin: 0 -2px;
+    border-radius: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  table.data { min-width: 720px; font-size: 13px; }
+  table.data th { padding: 10px 11px; font-size: 10.5px; }
+  table.data td { padding: 10px 11px; }
+
+  .detail-head { align-items: flex-start; }
+  .detail-head .spacer { display: none; }
+  .detail-head .btn { width: 100%; }
+
+  .modal-backdrop {
+    padding: 8px;
+    align-items: flex-end;
+  }
+  .modal {
+    max-height: calc(100dvh - 16px);
+    border-radius: 14px 14px 10px 10px;
+    overflow: hidden;
+  }
+  .modal-header {
+    padding: 13px 14px;
+  }
+  .modal-body {
+    padding: 14px;
+    overflow-y: auto;
+    max-height: calc(100dvh - 150px);
+    -webkit-overflow-scrolling: touch;
+  }
+  .modal-footer {
+    padding: 10px 14px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .modal-footer .btn { width: 100%; }
+
+  #toastRoot {
+    top: auto;
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    max-width: none;
+  }
+  .toast { font-size: 13px; }
+}
+
+@media (max-width: 560px) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .stat {
+    min-width: 0;
+    padding: 11px;
+    gap: 9px;
+  }
+  .stat .ic-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+  }
+  .stat .v { font-size: 21px; }
+  .stat .l {
+    font-size: 9.5px;
+    line-height: 1.2;
+  }
+
+  .quick-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .qa {
+    min-height: 94px;
+    padding: 12px 6px;
+    font-size: 12px;
+  }
+  .qa .qa-ic {
+    width: 38px;
+    height: 38px;
+  }
+
+  .content { padding: 9px; }
+  .footer { padding: 10px 12px; font-size: 10.5px; }
+
+  .movement-formula {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+  .movement-formula .mf { padding: 10px 8px; }
+  .movement-formula .mf strong { font-size: 19px; }
+
+  .info-grid, .kv {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+
+/* iPhone / Android safe areas */
+@supports (padding: max(0px)) {
+  .topbar {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+  .footer {
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Reduce motion for users who request it */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
