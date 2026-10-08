@@ -39,7 +39,7 @@
   function reportHtml() {
     const t = today();
     return `
-      <div class="report-centre">
+      <style>.report-centre .report-filter-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.report-centre .report-output-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:16px}.report-centre .report-output-btn{min-height:44px}@media(max-width:760px){.report-centre .report-filter-grid,.report-centre .report-output-grid{grid-template-columns:1fr}.report-centre .card-head h2{font-size:18px}}</style><div class="report-centre">
         <div class="card report-hero">
           <div class="card-head">
             <h2>Report Centre</h2>
