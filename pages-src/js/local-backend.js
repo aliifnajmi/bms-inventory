@@ -582,3 +582,172 @@
     return realFetch(input, init);
   };
 })();
+
+
+/* ============================================================
+   SUPABASE CLOUD OVERRIDE
+   ============================================================ */
+(function () {
+  const SUPABASE_URL = 'https://pczpprtdiqpoqodksaxc.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE';
+
+  if (!window.supabase || !window.supabase.createClient) return;
+  if (!SUPABASE_PUBLISHABLE_KEY || SUPABASE_PUBLISHABLE_KEY.indexOf('PASTE_') === 0) {
+    console.warn('[BMS IMS] Supabase publishable key is not configured.');
+    return;
+  }
+
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  const nativeFetch = window.fetch.bind(window);
+  const json = (status, body) => ({ ok: status >= 200 && status < 300, status, json: async () => body });
+  const today = () => new Date().toISOString().slice(0,10);
+  const statusOf = (b,m) => b <= 0 ? 'OUT OF STOCK' : (m > 0 && b <= m ? 'LOW STOCK' : 'NORMAL');
+  const s = v => String(v ?? '').trim();
+
+  async function load() {
+    const [ir,tr] = await Promise.all([
+      sb.from('items').select('*').order('item_code'),
+      sb.from('transactions').select('*').order('transaction_date',{ascending:false}).order('id',{ascending:false})
+    ]);
+    if (ir.error) throw ir.error;
+    if (tr.error) throw tr.error;
+    const tx = tr.data || [], by = new Map();
+    tx.forEach(t => { if(!by.has(t.item_id)) by.set(t.item_id,[]); by.get(t.item_id).push(t); });
+    const items = (ir.data||[]).map(i => {
+      const ts=by.get(i.id)||[];
+      const movement=ts.reduce((n,t)=>n+(t.transaction_type==='STOCK_OUT'?-Number(t.quantity):Number(t.quantity)),0);
+      const balance=Number(i.opening_stock||0)+movement;
+      return {...i,balance,status:statusOf(balance,Number(i.minimum_stock||0))};
+    });
+    return {items,tx};
+  }
+  const decorated=(tx,items)=> {
+    const map=new Map(items.map(i=>[i.id,i]));
+    return tx.map(t=>{const i=map.get(t.item_id)||{};return {...t,user:t.user_name||'',item_code:i.item_code,item_name:i.item_name,category:i.category,unit:i.unit};});
+  };
+
+  async function apiCloud(method,url,body) {
+    try {
+      if(method==='GET' && url.pathname==='/api/health'){
+        const r=await sb.from('items').select('id',{count:'exact',head:true});
+        if(r.error) throw r.error;
+        return json(200,{status:'ok',app:'BMS IMS',version:'2.0.0',database:'Supabase cloud'});
+      }
+      const {items,tx}=await load();
+      const q=Object.fromEntries(url.searchParams.entries());
+
+      if(method==='GET' && url.pathname==='/api/items'){
+        let rows=items;
+        if(q.search){const z=q.search.toLowerCase();rows=rows.filter(i=>[i.item_code,i.item_name,i.part_number,i.brand,i.model].some(v=>String(v||'').toLowerCase().includes(z)));}
+        if(q.category) rows=rows.filter(i=>i.category===q.category);
+        if(q.location) rows=rows.filter(i=>i.location===q.location);
+        if(q.brand) rows=rows.filter(i=>i.brand===q.brand);
+        if(q.status) rows=rows.filter(i=>i.status===q.status);
+        return json(200,rows);
+      }
+
+      if(method==='GET' && url.pathname==='/api/categories'){
+        const m=new Map();
+        items.forEach(i=>{if(!m.has(i.category))m.set(i.category,{id:i.category,name:i.category,description:'',item_count:0});m.get(i.category).item_count++;});
+        return json(200,[...m.values()].sort((a,b)=>a.name.localeCompare(b.name)));
+      }
+
+      if(method==='GET' && url.pathname==='/api/meta'){
+        const distinct=k=>[...new Set(items.map(i=>i[k]).filter(Boolean))].sort();
+        return json(200,{brands:distinct('brand'),locations:distinct('location'),units:distinct('unit')});
+      }
+
+      if(method==='GET' && url.pathname==='/api/dashboard'){
+        const sum=(type,date)=>tx.filter(t=>t.transaction_type===type&&(!date||t.transaction_date===date)).reduce((n,t)=>n+Number(t.quantity),0);
+        const cats=new Map();
+        items.forEach(i=>{const c=cats.get(i.category)||{category:i.category,item_count:0,total_stock:0};c.item_count++;c.total_stock+=i.balance;cats.set(i.category,c);});
+        return json(200,{
+          total_items:items.length,total_stock:items.reduce((n,i)=>n+i.balance,0),
+          low_stock_count:items.filter(i=>i.status==='LOW STOCK').length,
+          out_of_stock_count:items.filter(i=>i.status==='OUT OF STOCK').length,
+          stock_in_today:sum('STOCK_IN',today()),stock_out_today:sum('STOCK_OUT',today()),
+          totals:{total_in:sum('STOCK_IN'),total_out:sum('STOCK_OUT'),total_adjustment:sum('ADJUSTMENT'),total_transactions:tx.length},
+          stock_overview:{stock_in:sum('STOCK_IN'),stock_out:sum('STOCK_OUT'),balance:items.reduce((n,i)=>n+i.balance,0)},
+          by_category:[...cats.values()].sort((a,b)=>b.total_stock-a.total_stock),
+          low_stock_items:items.filter(i=>i.status!=='NORMAL').sort((a,b)=>a.balance-b.balance).slice(0,10),
+          recent_transactions:decorated(tx.slice(0,10),items)
+        });
+      }
+
+      let m=url.pathname.match(/^\/api\/items\/(\d+)$/);
+      if(m){
+        const id=Number(m[1]),item=items.find(i=>i.id===id);
+        if(!item)return json(404,{error:'Item not found.'});
+        if(method==='GET'){
+          const h=decorated(tx.filter(t=>t.item_id===id),items);
+          let running=item.opening_stock;
+          const timeline=[{label:'Opening Stock',date:'Start',value:running,type:'OPENING'}];
+          h.slice().sort((a,b)=>a.transaction_date.localeCompare(b.transaction_date)||a.id-b.id).forEach(t=>{running+=t.transaction_type==='STOCK_OUT'?-t.quantity:t.quantity;timeline.push({label:t.transaction_id,date:t.transaction_date,value:running,type:t.transaction_type});});
+          return json(200,{...item,total_in:h.filter(t=>t.transaction_type==='STOCK_IN').reduce((n,t)=>n+t.quantity,0),total_out:h.filter(t=>t.transaction_type==='STOCK_OUT').reduce((n,t)=>n+t.quantity,0),total_adjustment:h.filter(t=>t.transaction_type==='ADJUSTMENT').reduce((n,t)=>n+t.quantity,0),transaction_count:h.length,history:h.slice(0,100),timeline});
+        }
+        if(method==='PUT'){
+          const patch={};
+          ['item_name','description','category','subcategory','brand','model','part_number','unit','location','minimum_stock','maximum_stock','opening_stock','supplier','remarks'].forEach(k=>{if(body[k]!==undefined)patch[k]=body[k];});
+          ['minimum_stock','maximum_stock','opening_stock'].forEach(k=>{if(patch[k]!==undefined)patch[k]=Number(patch[k]);});
+          patch.updated_at=new Date().toISOString();
+          const r=await sb.from('items').update(patch).eq('id',id).select('*').single();
+          if(r.error)throw r.error;
+          const fresh=await load();return json(200,fresh.items.find(i=>i.id===id)||r.data);
+        }
+      }
+
+      if(method==='POST' && url.pathname==='/api/items'){
+        const v={item_code:s(body.item_code),item_name:s(body.item_name),description:s(body.description),category:s(body.category),subcategory:s(body.subcategory),brand:s(body.brand),model:s(body.model),part_number:s(body.part_number),unit:s(body.unit)||'PCS',location:s(body.location)||'BMS Store',minimum_stock:Number(body.minimum_stock||0),maximum_stock:Number(body.maximum_stock||0),opening_stock:Number(body.opening_stock||0),supplier:s(body.supplier),remarks:s(body.remarks)};
+        if(!v.item_code||!v.item_name||!v.category)return json(400,{error:'Item Code, Item Name and Category are required.'});
+        const r=await sb.from('items').insert(v).select('*').single();if(r.error)throw r.error;
+        return json(200,{...r.data,balance:r.data.opening_stock,status:statusOf(r.data.opening_stock,r.data.minimum_stock)});
+      }
+
+      if(method==='GET' && url.pathname==='/api/transactions'){
+        let rows=decorated(tx,items);
+        if(q.type)rows=rows.filter(t=>t.transaction_type===q.type);
+        if(q.item_id)rows=rows.filter(t=>t.item_id===Number(q.item_id));
+        if(q.category)rows=rows.filter(t=>t.category===q.category);
+        if(q.user)rows=rows.filter(t=>String(t.user||'').toLowerCase().includes(q.user.toLowerCase()));
+        if(q.from)rows=rows.filter(t=>t.transaction_date>=q.from);
+        if(q.to)rows=rows.filter(t=>t.transaction_date<=q.to);
+        if(q.search){const z=q.search.toLowerCase();rows=rows.filter(t=>[t.transaction_id,t.reference,t.work_order,t.item_code,t.item_name,t.remarks].some(v=>String(v||'').toLowerCase().includes(z)));}
+        return json(200,rows.slice(0,1000));
+      }
+
+      if(method==='POST' && (url.pathname==='/api/transactions/stock-in'||url.pathname==='/api/transactions/stock-out')){
+        const type=url.pathname.endsWith('stock-in')?'STOCK_IN':'STOCK_OUT';
+        const itemId=Number(body.item_id),qty=Number(body.quantity),item=items.find(i=>i.id===itemId);
+        if(!item||!Number.isInteger(qty)||qty<1)return json(400,{error:'Valid item and positive quantity are required.'});
+        if(type==='STOCK_OUT'&&qty>item.balance)return json(400,{error:`Stock Out failed. Only ${item.balance} ${item.unit} of "${item.item_code}" are currently available.`});
+        const max=(await sb.from('transactions').select('id').order('id',{ascending:false}).limit(1)).data?.[0]?.id||0;
+        const row={transaction_id:`TXN-${new Date().getFullYear()}-${String(Number(max)+1).padStart(6,'0')}`,item_id:itemId,transaction_type:type,quantity:qty,reference:s(body.reference||(type==='STOCK_OUT'?body.work_order:'')),supplier:s(body.supplier),issued_to:s(body.issued_to),work_order:s(body.work_order),area:s(body.area),reason:s(body.reason),received_by:s(body.received_by),issued_by:s(body.issued_by),user_name:s(body.received_by||body.issued_by||body.user)||(type==='STOCK_IN'?'Storekeeper':'BMS Technician'),remarks:s(body.remarks),transaction_date:s(body.transaction_date||body.date)||today()};
+        const r=await sb.from('transactions').insert(row).select('*').single();if(r.error)throw r.error;
+        return json(200,{transaction:{...r.data,user:r.data.user_name,item_code:item.item_code,item_name:item.item_name,unit:item.unit,category:item.category},balance:type==='STOCK_OUT'?item.balance-qty:item.balance+qty});
+      }
+
+      if(method==='POST' && url.pathname==='/api/transactions/adjustment'){
+        const itemId=Number(body.item_id),physical=Number(body.physical_stock),item=items.find(i=>i.id===itemId),reason=s(body.reason);
+        if(!item||!Number.isInteger(physical)||physical<0||!reason)return json(400,{error:'Valid item, physical stock and reason are required.'});
+        const diff=physical-item.balance;if(diff===0)return json(400,{error:`No adjustment needed. Physical stock matches system stock (${item.balance} ${item.unit}).`});
+        const max=(await sb.from('transactions').select('id').order('id',{ascending:false}).limit(1)).data?.[0]?.id||0;
+        const row={transaction_id:`TXN-${new Date().getFullYear()}-${String(Number(max)+1).padStart(6,'0')}`,item_id:itemId,transaction_type:'ADJUSTMENT',quantity:diff,reference:s(body.reference)||'STOCK-TAKE',reason,user_name:s(body.user)||'Storekeeper',remarks:s(body.remarks),transaction_date:s(body.transaction_date||body.date)||today()};
+        const r=await sb.from('transactions').insert(row).select('*').single();if(r.error)throw r.error;
+        return json(200,{transaction:r.data,balance:physical,system_stock:item.balance,physical_stock:physical,difference:diff});
+      }
+
+      if(method==='POST'&&url.pathname==='/api/reset')return json(400,{error:'Reset Demo Data is disabled for cloud inventory.'});
+      return json(404,{error:'API endpoint not found.'});
+    } catch(e) { console.error('[BMS IMS]',e); return json(500,{error:e.message||'Supabase request failed.'}); }
+  }
+
+  window.fetch=function(input,init){
+    const url=new URL(typeof input==='string'?input:input.url,location.href);
+    if(url.pathname.startsWith('/api/')){
+      const method=(init&&init.method)||'GET';let body={};
+      if(init&&init.body){try{body=JSON.parse(init.body);}catch{}}
+      return apiCloud(method,url,body);
+    }
+    return nativeFetch(input,init);
+  };
+})();
