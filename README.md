@@ -160,6 +160,32 @@ bms-inventory/
   "Others" so no item is ever left without a category.
 - Destructive actions (delete, reset) always ask for confirmation.
 
+## 🌐 GitHub Pages demo (browser-only build)
+
+A **100% static, zero-dependency browser version** of the same system is deployed
+via GitHub Pages:
+
+👉 **https://aliifnajmi.github.io/bms-inventory/**
+
+- Same UI, same pages, same business rules as the Node version.
+- The REST API is implemented in the browser (`pages-src/js/local-backend.js`)
+  and backed by **localStorage** — stock balance is still calculated from
+  transactions, Stock Out is still blocked above available stock, etc.
+- Data is stored **only in the visitor's browser** (per device/browser).
+  Use Settings → **Reset Demo Data** to restore the original dataset.
+- The demo dataset is generated from `seed.js` and **inlined into
+  `docs/js/local-backend.js`** at build time, so it never drifts from the
+  server version and the site works from any base path.
+- GitHub Pages serves the repository root: the root `index.html` is a generated
+  entry point that loads the app (which lives in `docs/`). The standalone
+  `docs/index.html` works too (`/docs/`).
+
+Rebuild the Pages site after changing the frontend or seed data:
+
+```bash
+npm run build:pages    # regenerates docs/ + root index.html from public/ + pages-src/ + seed.js
+```
+
 ## Limitations of this version
 
 - Single-user / single-store: no login, roles or audit trail of *who* changed

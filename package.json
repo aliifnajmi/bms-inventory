@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node --disable-warning=ExperimentalWarning server.js",
     "start:reset": "node --disable-warning=ExperimentalWarning server.js --reset",
-    "test": "node test/smoke-test.js"
+    "test": "node test/smoke-test.js",
+    "build:pages": "node scripts/build-pages.js"
   },
   "engines": {
     "node": ">=22.5.0"
