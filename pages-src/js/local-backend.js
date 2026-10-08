@@ -15,7 +15,7 @@
  */
 (function () {
   const LS_KEY = 'bms-ims-local-v1';
-  const VERSION = '1.0.0';
+  const VERSION = '1.1.0';
 
   // The demo dataset is inlined at build time by scripts/build-pages.js
   // (it replaces the placeholder below with JSON generated from seed.js).
@@ -77,7 +77,7 @@
   }
   function statusOf(balance, minimumStock) {
     if (balance <= 0) return 'OUT OF STOCK';
-    if (balance <= minimumStock) return 'LOW STOCK';
+    if (minimumStock > 0 && balance <= minimumStock) return 'LOW STOCK';
     return 'NORMAL';
   }
 
