@@ -39,6 +39,7 @@ fs.mkdirSync(DOCS, { recursive: true });
 copy(path.join(ROOT, 'public/css/style.css'), path.join(DOCS, 'css/style.css'));
 copy(path.join(ROOT, 'public/js/app.js'), path.join(DOCS, 'js/app.js'));
 copy(path.join(ROOT, 'public/js/charts.js'), path.join(DOCS, 'js/charts.js'));
+copy(path.join(ROOT, 'public/js/transaction-enhancements.js'), path.join(DOCS, 'js/transaction-enhancements.js'));
 
 /* 3. demo dataset, generated from seed.js so it never drifts */
 const now = new Date().toISOString();
