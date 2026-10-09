@@ -24,10 +24,11 @@
       '<section class="txn-attachments"><div class="txn-attachments-head"><div><h4>Attachments</h4><p>Upload DO, PO, work order, photos or other evidence (10 MB max per file).</p></div><span class="badge normal" id="txnAttachCount">Loading…</span></div>' +
       '<div class="txn-upload-row"><input type="file" id="txnAttachmentInput" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.csv,.doc,.docx,.xls,.xlsx"><button type="button" class="btn btn-primary" id="txnAttachmentUpload">' + txnIcon() + ' Upload files</button></div>' +
       '<div id="txnAttachmentList" class="txn-attachment-list">Loading attachments…</div></section></div>';
-    root.innerHTML = '<div class="modal-backdrop" id="txnModalBackdrop"><div class="modal wide" role="dialog" aria-modal="true"><div class="modal-header"><h3>Transaction Preview</h3><button class="icon-btn" id="txnModalClose">×</button></div><div class="modal-body">' + body + '</div><div class="modal-footer"><button class="btn" id="txnModalDone">Close</button></div></div></div>';
+    root.innerHTML = '<div class="modal-backdrop" id="txnModalBackdrop"><div class="modal wide" role="dialog" aria-modal="true"><div class="modal-header"><h3>Transaction Preview</h3><button class="icon-btn" id="txnModalClose">×</button></div><div class="modal-body">' + body + '</div><div class="modal-footer"><button class="btn" id="txnDownloadPdf">Download PDF</button><button class="btn" id="txnModalDone">Close</button></div></div></div>';
     function close() { root.innerHTML = ''; }
     document.getElementById('txnModalClose').onclick = close; document.getElementById('txnModalDone').onclick = close;
-    document.getElementById('txnDownloadPdf').onclick = function () {
+    var pdfButton = document.getElementById('txnDownloadPdf');
+    if (pdfButton) pdfButton.onclick = function () {
       var jsPDF = window.jspdf && window.jspdf.jsPDF;
       if (!jsPDF) return alert('PDF library did not load. Refresh the page and try again.');
       var doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
