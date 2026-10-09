@@ -3,12 +3,21 @@
 (function () {
   function txnEsc(v) { return String(v == null ? '' : v).replace(/[&<>\"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]; }); }
   function txnIcon() { return '<svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>'; }
+  function ensureReportStyles() {
+    if (document.getElementById('txnReportStyles')) return;
+    var style = document.createElement('style'); style.id = 'txnReportStyles';
+    style.textContent = '.txn-report-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px;padding:12px;border:1px solid var(--border);border-radius:10px;background:#f8fafc}.txn-report-controls label{font-weight:700;font-size:12px}.txn-report-controls select{padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:#fff}.txn-report-controls span{font-size:12px;color:var(--muted)}.txn-report-paper{margin:0 auto 14px;background:#fff;color:#172033;border:1px solid #dbe3ec;border-radius:12px;padding:20px;box-shadow:0 5px 20px rgba(15,23,42,.07);box-sizing:border-box}.txn-paper-a4{width:100%;max-width:740px;min-height:600px}.txn-paper-square{width:min(100%,420px);min-height:0;padding:14px}.txn-report-heading{display:flex;justify-content:space-between;gap:14px;padding-bottom:14px;margin-bottom:14px;border-bottom:2px solid #1c375a}.txn-report-heading small{font-size:9px;letter-spacing:.08em;color:#64748b;font-weight:800}.txn-report-heading h2{font-size:17px;line-height:1.25;margin:6px 0;color:#1c375a}.txn-report-heading p{font-size:12px;color:#64748b;margin:0}.txn-report-code{text-align:right;min-width:92px}.txn-report-code>strong{display:block;font-size:12px;overflow-wrap:anywhere}.txn-report-code>span{display:block;font-size:9px;color:#64748b;margin:3px 0 8px}.txn-qr-placeholder{border:1px dashed #94a3b8;border-radius:6px;padding:9px 4px;font-size:9px;font-weight:800;color:#64748b;text-align:center}.txn-qr-placeholder small{font-size:8px;font-weight:500}.txn-paper-square .txn-report-heading h2{font-size:13px}.txn-paper-square .txn-report-heading{gap:8px}.txn-paper-square .txn-detail-grid{grid-template-columns:1fr;padding:10px;gap:9px}.txn-paper-square .txn-detail-grid .full{grid-column:auto}.txn-paper-square .txn-preview-top{margin-bottom:9px}@media(max-width:600px){.txn-report-paper{padding:12px}.txn-paper-a4{min-height:0}.txn-report-heading h2{font-size:14px}.txn-report-code{min-width:78px}}';
+    document.head.appendChild(style);
+  }
   function openTxnPreview(t, refresh) {
+    ensureReportStyles();
     var sb = window.bmsSupabase; if (!sb) return alert('Supabase attachment service is not connected. Refresh the page.');
     var root = document.getElementById('modalRoot');
     var reference = String(t.reference || '').trim();
-    var body = '<div class="txn-preview"><div class="txn-preview-top"><strong>' + txnEsc(t.transaction_id) + '</strong><span>' + txnEsc(t.transaction_date) + '</span></div>' +
-      '<div class="txn-detail-grid">' +
+    var body = '<div class="txn-report-controls"><label for="txnReportSize">Report layout</label><select id="txnReportSize"><option value="a4">A4 — Print / File</option><option value="square">Square — Compact card</option></select><span>Transaction ID is used as the Work Order reference.</span></div>' +
+      '<div class="txn-report-paper txn-paper-a4" id="txnReportPaper"><div class="txn-report-heading"><div><small>BMS INVENTORY MANAGEMENT SYSTEM</small><h2>WORK ORDER / TRANSACTION REPORT</h2><p>Stock movement record</p></div><div class="txn-report-code"><strong>' + txnEsc(t.transaction_id) + '</strong><span>WORK ORDER ID</span><div class="txn-qr-placeholder">QR / BARCODE<br><small>Planned feature</small></div></div></div>' +
+      '<div class="txn-preview"><div class="txn-preview-top"><strong>' + txnEsc(t.transaction_id) + '</strong><span>' + txnEsc(t.transaction_date) + '</span></div>' +
+      '<div class="txn-detail-grid">'
       '<div><span>Type</span><strong>' + txnEsc(t.transaction_type) + '</strong></div>' +
       '<div><span>Item</span><strong>' + txnEsc(t.item_code) + ' — ' + txnEsc(t.item_name) + '</strong></div>' +
       '<div><span>Quantity</span><strong>' + txnEsc((t.transaction_type === 'STOCK_IN' ? '+' : t.transaction_type === 'STOCK_OUT' ? '−' : (Number(t.quantity)>0?'+':'')) + t.quantity + ' ' + (t.unit || '')) + '</strong></div>' +
@@ -24,30 +33,57 @@
       '<section class="txn-attachments"><div class="txn-attachments-head"><div><h4>Attachments</h4><p>Upload DO, PO, work order, photos or other evidence (10 MB max per file).</p></div><span class="badge normal" id="txnAttachCount">Loading…</span></div>' +
       '<div class="txn-upload-row"><input type="file" id="txnAttachmentInput" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.csv,.doc,.docx,.xls,.xlsx"><button type="button" class="btn btn-primary" id="txnAttachmentUpload">' + txnIcon() + ' Upload files</button></div>' +
       '<div id="txnAttachmentList" class="txn-attachment-list">Loading attachments…</div></section></div>';
-    root.innerHTML = '<div class="modal-backdrop" id="txnModalBackdrop"><div class="modal wide" role="dialog" aria-modal="true"><div class="modal-header"><h3>Transaction Preview</h3><button class="icon-btn" id="txnModalClose">×</button></div><div class="modal-body">' + body + '</div><div class="modal-footer"><button class="btn" id="txnDownloadPdf">Download PDF</button><button class="btn" id="txnModalDone">Close</button></div></div></div>';
+    root.innerHTML = '<div class="modal-backdrop" id="txnModalBackdrop"><div class="modal wide" role="dialog" aria-modal="true"><div class="modal-header"><h3>Work Order Report Preview</h3><button class="icon-btn" id="txnModalClose">×</button></div><div class="modal-body">' + body + '</div><div class="modal-footer"><button class="btn" id="txnDownloadExcel">Download Excel</button><button class="btn btn-primary" id="txnDownloadPdf">Download PDF</button><button class="btn" id="txnModalDone">Close</button></div></div></div>';
     function close() { root.innerHTML = ''; }
     document.getElementById('txnModalClose').onclick = close; document.getElementById('txnModalDone').onclick = close;
     var pdfButton = document.getElementById('txnDownloadPdf');
     if (pdfButton) pdfButton.onclick = function () {
       var jsPDF = window.jspdf && window.jspdf.jsPDF;
       if (!jsPDF) return alert('PDF library did not load. Refresh the page and try again.');
-      var doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-      doc.setFontSize(17); doc.text('BMS IMS — Transaction Record',14,18);
-      doc.setFontSize(10); doc.text('Transaction ID: '+String(t.transaction_id||''),14,27);
-      doc.text('Generated: '+new Date().toLocaleString(),14,33);
+      var size = document.getElementById('txnReportSize') ? document.getElementById('txnReportSize').value : 'a4';
+      var doc = new jsPDF(size === 'square' ? {orientation:'portrait',unit:'mm',format:[100,100]} : {orientation:'portrait',unit:'mm',format:'a4'});
+      var pageWidth = doc.internal.pageSize.getWidth();
+      var margin = size === 'square' ? 7 : 14;
+      var usableWidth = pageWidth - margin * 2;
+      doc.setFontSize(size === 'square' ? 11 : 17); doc.text('BMS IMS — Work Order Report',margin,margin+4);
+      doc.setFontSize(8); doc.text('Work Order / Transaction ID: '+String(t.transaction_id||''),margin,margin+11);
+      doc.text('Date: '+String(t.transaction_date||'—')+'  |  Generated: '+new Date().toLocaleDateString(),margin,margin+17);
       var rows = [
-        ['Transaction Date',t.transaction_date],['Transaction Type',t.transaction_type],
+        ['Work Order ID',t.transaction_id||'—'],['Transaction Date',t.transaction_date],['Transaction Type',t.transaction_type],
         ['Item Code',t.item_code],['Item Name',t.item_name],
-        ['Quantity',String(t.quantity)+' '+String(t.unit||'')],
+        ['Quantity',String(t.transaction_type==='STOCK_OUT'?'−':t.transaction_type==='STOCK_IN'?'+':'')+String(t.quantity)+' '+String(t.unit||'')],
         ['Reference',t.reference||'—'],['Supplier',t.supplier||'—'],
         ['Issued To',t.issued_to||'—'],['Received By',t.received_by||'—'],
-        ['Work Order',t.work_order||'—'],['Area',t.area||'—'],['Reason',t.reason||'—'],
+        ['Work Order Details',t.work_order||'—'],['Area',t.area||'—'],['Reason',t.reason||'—'],
         ['Remarks',t.remarks||'—'],['Recorded By',t.user_name||t.user||t.issued_by||t.received_by||'Not recorded'],
         ['Created At',t.created_at?new Date(t.created_at).toLocaleString():'Not available']
       ];
-      if (typeof doc.autoTable === 'function') doc.autoTable({startY:39,head:[['Field','Transaction Details']],body:rows.map(function(r){return [String(r[0]),String(r[1]||'—')];}),styles:{fontSize:9,cellPadding:3,overflow:'linebreak'},headStyles:{fillColor:[28,55,90]}});
-      else { var y=40; rows.forEach(function(r){doc.text(String(r[0])+': '+String(r[1]||'—').slice(0,120),14,y); y+=7; if(y>280){doc.addPage();y=20;}}); }
-      doc.save(String(t.transaction_id||'transaction')+'.pdf');
+      if (typeof doc.autoTable === 'function') doc.autoTable({startY:margin+22,margin:{left:margin,right:margin},tableWidth:usableWidth,head:[['Field','Work Order Details']],body:rows.map(function(r){return [String(r[0]),String(r[1]||'—')];}),styles:{fontSize:size==='square'?5.5:9,cellPadding:size==='square'?1.5:3,overflow:'linebreak'},headStyles:{fillColor:[28,55,90]},columnStyles:{0:{cellWidth:size==='square'?29:45},1:{cellWidth:'auto'}}});
+      else { var y=margin+25; rows.forEach(function(r){doc.setFontSize(7);doc.text(String(r[0])+': '+String(r[1]||'—').slice(0,70),margin,y); y+=5; if(y>doc.internal.pageSize.getHeight()-margin){doc.addPage();y=margin;}}); }
+      doc.save(String(t.transaction_id||'work-order')+'-'+size+'.pdf');
+    };
+    var sizeSelect = document.getElementById('txnReportSize');
+    if (sizeSelect) sizeSelect.onchange = function() {
+      var paper = document.getElementById('txnReportPaper');
+      if (paper) paper.className = 'txn-report-paper ' + (sizeSelect.value === 'square' ? 'txn-paper-square' : 'txn-paper-a4');
+    };
+    var excelButton = document.getElementById('txnDownloadExcel');
+    if (excelButton) excelButton.onclick = function() {
+      if (!window.XLSX) return alert('Excel library did not load. Refresh the page and try again.');
+      var rows = [
+        ['Field','Work Order / Transaction Details'],
+        ['Work Order ID',t.transaction_id||'—'],['Transaction Date',t.transaction_date||'—'],['Transaction Type',t.transaction_type||'—'],
+        ['Item Code',t.item_code||'—'],['Item Name',t.item_name||'—'],
+        ['Quantity',(t.transaction_type==='STOCK_OUT'?'−':t.transaction_type==='STOCK_IN'?'+':'')+String(t.quantity||'')+' '+String(t.unit||'')],
+        ['Reference',t.reference||'—'],['Supplier',t.supplier||'—'],['Issued To',t.issued_to||'—'],['Received By',t.received_by||'—'],
+        ['Work Order Details',t.work_order||'—'],['Area',t.area||'—'],['Reason',t.reason||'—'],['Remarks',t.remarks||'—'],
+        ['Recorded By',t.user_name||t.user||t.issued_by||t.received_by||'Not recorded'],['Created At',t.created_at||'—']
+      ];
+      var wb = XLSX.utils.book_new();
+      var ws = XLSX.utils.aoa_to_sheet([['BMS IMS — Work Order / Transaction Report'],['Generated',new Date().toLocaleString()],[],...rows]);
+      ws['!cols'] = [{wch:24},{wch:54}];
+      XLSX.utils.book_append_sheet(wb,ws,'Work Order');
+      XLSX.writeFile(wb,String(t.transaction_id||'work-order')+'-report.xlsx');
     };
     document.getElementById('txnModalBackdrop').onclick = function(e) { if (e.target.id === 'txnModalBackdrop') close(); };
     var refBox = document.getElementById('txnRefPreview');
