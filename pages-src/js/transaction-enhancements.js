@@ -15,6 +15,8 @@
       '<div><span>Reference</span><strong>' + txnEsc(reference || '—') + '</strong></div>' +
       '<div><span>Supplier</span><strong>' + txnEsc(t.supplier || '—') + '</strong></div>' +
       '<div><span>Issued To / Received By</span><strong>' + txnEsc(t.issued_to || t.received_by || '—') + '</strong></div>' +
+      '<div><span>Recorded By (Audit Trail)</span><strong>' + txnEsc(t.user_name || t.user || t.issued_by || t.received_by || 'Not recorded') + '</strong></div>' +
+      '<div><span>Created At</span><strong>' + txnEsc(t.created_at ? new Date(t.created_at).toLocaleString() : 'Not available') + '</strong></div>' +
       '<div><span>Work Order</span><strong>' + txnEsc(t.work_order || '—') + '</strong></div>' +
       '<div><span>Area</span><strong>' + txnEsc(t.area || '—') + '</strong></div>' +
       '<div class="full"><span>Reason / Remarks</span><strong>' + txnEsc([t.reason,t.remarks].filter(Boolean).join(' · ') || '—') + '</strong></div></div>' +
@@ -25,6 +27,27 @@
     root.innerHTML = '<div class="modal-backdrop" id="txnModalBackdrop"><div class="modal wide" role="dialog" aria-modal="true"><div class="modal-header"><h3>Transaction Preview</h3><button class="icon-btn" id="txnModalClose">×</button></div><div class="modal-body">' + body + '</div><div class="modal-footer"><button class="btn" id="txnModalDone">Close</button></div></div></div>';
     function close() { root.innerHTML = ''; }
     document.getElementById('txnModalClose').onclick = close; document.getElementById('txnModalDone').onclick = close;
+    document.getElementById('txnDownloadPdf').onclick = function () {
+      var jsPDF = window.jspdf && window.jspdf.jsPDF;
+      if (!jsPDF) return alert('PDF library did not load. Refresh the page and try again.');
+      var doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+      doc.setFontSize(17); doc.text('BMS IMS — Transaction Record',14,18);
+      doc.setFontSize(10); doc.text('Transaction ID: '+String(t.transaction_id||''),14,27);
+      doc.text('Generated: '+new Date().toLocaleString(),14,33);
+      var rows = [
+        ['Transaction Date',t.transaction_date],['Transaction Type',t.transaction_type],
+        ['Item Code',t.item_code],['Item Name',t.item_name],
+        ['Quantity',String(t.quantity)+' '+String(t.unit||'')],
+        ['Reference',t.reference||'—'],['Supplier',t.supplier||'—'],
+        ['Issued To',t.issued_to||'—'],['Received By',t.received_by||'—'],
+        ['Work Order',t.work_order||'—'],['Area',t.area||'—'],['Reason',t.reason||'—'],
+        ['Remarks',t.remarks||'—'],['Recorded By',t.user_name||t.user||t.issued_by||t.received_by||'Not recorded'],
+        ['Created At',t.created_at?new Date(t.created_at).toLocaleString():'Not available']
+      ];
+      if (typeof doc.autoTable === 'function') doc.autoTable({startY:39,head:[['Field','Transaction Details']],body:rows.map(function(r){return [String(r[0]),String(r[1]||'—')];}),styles:{fontSize:9,cellPadding:3,overflow:'linebreak'},headStyles:{fillColor:[28,55,90]}});
+      else { var y=40; rows.forEach(function(r){doc.text(String(r[0])+': '+String(r[1]||'—').slice(0,120),14,y); y+=7; if(y>280){doc.addPage();y=20;}}); }
+      doc.save(String(t.transaction_id||'transaction')+'.pdf');
+    };
     document.getElementById('txnModalBackdrop').onclick = function(e) { if (e.target.id === 'txnModalBackdrop') close(); };
     var refBox = document.getElementById('txnRefPreview');
     if (/^https?:\/\//i.test(reference)) {
