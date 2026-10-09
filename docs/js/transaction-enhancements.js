@@ -54,3 +54,36 @@
   window.bmsOpenTransactionPreview = openTxnPreview;
   window.bmsTransactionAttachmentUiReady = true;
 })();
+
+/* Replace the legacy transaction renderer while keeping existing filters and export. */
+renderTransactions = async function () {
+  var f = state.txn;
+  var typeOpts = ['<option value="">All Types</option>'].concat(['STOCK_IN','STOCK_OUT','ADJUSTMENT'].map(function(t){return '<option value="'+t+'" '+(f.type===t?'selected':'')+'>'+t.replace('_',' ')+'</option>'; })).join('');
+  var itemOpts = ['<option value="">All Items</option>'].concat(state.items.map(function(i){return '<option value="'+i.id+'" '+(String(f.item_id)===String(i.id)?'selected':'')+'>'+esc(i.item_code)+' — '+esc(i.item_name)+'</option>'; })).join('');
+  var catOpts = ['<option value="">All Categories</option>'].concat(state.categories.map(function(c){return '<option value="'+esc(c.name)+'" '+(f.category===c.name?'selected':'')+'>'+esc(c.name)+'</option>'; })).join('');
+  var html = '<div class="card"><div class="toolbar"><div class="search-box">'+icon('search',17)+'<input id="txnSearch" placeholder="Search ID, reference, work order, item…" value="'+esc(f.search)+'"></div><select id="txnType">'+typeOpts+'</select><select id="txnItem">'+itemOpts+'</select><select id="txnCat">'+catOpts+'</select><input type="text" id="txnUser" placeholder="User…" value="'+esc(f.user)+'" style="padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:13.5px;max-width:140px"><input type="date" id="txnFrom" value="'+esc(f.from)+'" title="From date" style="padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:13.5px"><input type="date" id="txnTo" value="'+esc(f.to)+'" title="To date" style="padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:13.5px"><div class="toolbar-actions"><button class="btn" id="btnExportTxn">'+icon('file',16)+' Export CSV</button></div></div><div class="table-wrap"><table class="data"><thead><tr><th>Date</th><th>Transaction ID</th><th>Type</th><th>Item Code</th><th>Item Name</th><th class="num">Quantity</th><th>Reference preview</th><th>Attachments</th><th>User</th></tr></thead><tbody id="txnBody"></tbody></table></div><div class="card-foot" id="txnCount"></div></div>';
+  var txns = [];
+  async function load() {
+    var qs = new URLSearchParams(); Object.entries(state.txn).forEach(function(pair){if(pair[1]) qs.set(pair[0],pair[1]);});
+    txns = await api('/api/transactions?' + qs);
+    var counts = {};
+    if(window.bmsSupabase && txns.length) { var ids=txns.map(function(t){return Number(t.id);}); var q=await window.bmsSupabase.from('transaction_attachments').select('transaction_id').in('transaction_id',ids); if(!q.error)(q.data||[]).forEach(function(a){counts[a.transaction_id]=(counts[a.transaction_id]||0)+1;}); }
+    document.getElementById('txnBody').innerHTML = txns.length ? txns.map(function(t){
+      var qty=(t.transaction_type==='STOCK_IN'?'+':t.transaction_type==='STOCK_OUT'?'−':Number(t.quantity)>0?'+':'')+t.quantity;
+      return '<tr><td style="white-space:nowrap">'+esc(t.transaction_date)+'</td><td><button class="txn-id-link" type="button" data-txn-id="'+t.id+'">'+esc(t.transaction_id)+'</button><span class="sub">Preview details</span></td><td>'+typeBadge(t.transaction_type)+'</td><td><a class="link" href="#/items/'+t.item_id+'">'+esc(t.item_code)+'</a></td><td>'+esc(t.item_name)+(t.work_order?'<span class="sub">'+esc(t.work_order)+(t.area?' · '+esc(t.area):'')+'</span>':'')+'</td><td class="num">'+esc(qty)+' '+esc(t.unit)+'</td><td>'+(t.reference?'<button class="reference-preview-link" type="button" data-txn-id="'+t.id+'">'+esc(t.reference)+'</button>':esc(t.work_order||'—'))+'</td><td><button class="btn btn-sm" type="button" data-txn-id="'+t.id+'">'+icon('file',14)+' '+(counts[t.id]||0)+' file(s)</button></td><td>'+esc(t.user||t.user_name||'—')+'</td></tr>';
+    }).join('') : emptyRow(9);
+    document.getElementById('txnCount').textContent=txns.length+' transaction(s) · Select Transaction ID or Reference to preview details and files';
+    Array.from(document.querySelectorAll('[data-txn-id]')).forEach(function(b){b.onclick=function(){window.bmsOpenTransactionPreview(txns.find(function(t){return Number(t.id)===Number(b.dataset.txnId);}),load);};});
+  }
+  return {html:html,bind:function(){
+    load().catch(function(e){toast(e.message,'error');});
+    document.getElementById('txnSearch').addEventListener('input',debounce(function(e){state.txn.search=e.target.value.trim();load();},300));
+    document.getElementById('txnType').onchange=function(e){state.txn.type=e.target.value;load();};
+    document.getElementById('txnItem').onchange=function(e){state.txn.item_id=e.target.value;load();};
+    document.getElementById('txnCat').onchange=function(e){state.txn.category=e.target.value;load();};
+    document.getElementById('txnUser').addEventListener('input',debounce(function(e){state.txn.user=e.target.value.trim();load();},300));
+    document.getElementById('txnFrom').onchange=function(e){state.txn.from=e.target.value;load();};
+    document.getElementById('txnTo').onchange=function(e){state.txn.to=e.target.value;load();};
+    document.getElementById('btnExportTxn').onclick=function(){downloadCsv('bms-transactions-'+todayStr()+'.csv',['Date','Transaction ID','Type','Item Code','Item Name','Quantity','Unit','Reference','Supplier','Issued To','Work Order','Area','Reason','User','Remarks'],txns.map(function(t){return [t.transaction_date,t.transaction_id,t.transaction_type,t.item_code,t.item_name,t.transaction_type==='STOCK_OUT'?-t.quantity:t.quantity,t.unit,t.reference,t.supplier,t.issued_to,t.work_order,t.area,t.reason,t.user||t.user_name,t.remarks];}));};
+  }};
+};
