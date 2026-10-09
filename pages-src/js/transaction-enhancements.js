@@ -17,7 +17,7 @@
     var body = '<div class="txn-report-controls"><label for="txnReportSize">Report layout</label><select id="txnReportSize"><option value="a4">A4 — Print / File</option><option value="square">Square — Compact card</option></select><span>Transaction ID is used as the Work Order reference.</span></div>' +
       '<div class="txn-report-paper txn-paper-a4" id="txnReportPaper"><div class="txn-report-heading"><div><small>BMS INVENTORY MANAGEMENT SYSTEM</small><h2>WORK ORDER / TRANSACTION REPORT</h2><p>Stock movement record</p></div><div class="txn-report-code"><strong>' + txnEsc(t.transaction_id) + '</strong><span>WORK ORDER ID</span><div class="txn-qr-placeholder">QR / BARCODE<br><small>Planned feature</small></div></div></div>' +
       '<div class="txn-preview"><div class="txn-preview-top"><strong>' + txnEsc(t.transaction_id) + '</strong><span>' + txnEsc(t.transaction_date) + '</span></div>' +
-      '<div class="txn-detail-grid">'
+      '<div class="txn-detail-grid">' +
       '<div><span>Type</span><strong>' + txnEsc(t.transaction_type) + '</strong></div>' +
       '<div><span>Item</span><strong>' + txnEsc(t.item_code) + ' — ' + txnEsc(t.item_name) + '</strong></div>' +
       '<div><span>Quantity</span><strong>' + txnEsc((t.transaction_type === 'STOCK_IN' ? '+' : t.transaction_type === 'STOCK_OUT' ? '−' : (Number(t.quantity)>0?'+':'')) + t.quantity + ' ' + (t.unit || '')) + '</strong></div>' +
@@ -32,7 +32,7 @@
       '<div class="txn-reference-preview" id="txnRefPreview"></div>' +
       '<section class="txn-attachments"><div class="txn-attachments-head"><div><h4>Attachments</h4><p>Upload DO, PO, work order, photos or other evidence (10 MB max per file).</p></div><span class="badge normal" id="txnAttachCount">Loading…</span></div>' +
       '<div class="txn-upload-row"><input type="file" id="txnAttachmentInput" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.csv,.doc,.docx,.xls,.xlsx"><button type="button" class="btn btn-primary" id="txnAttachmentUpload">' + txnIcon() + ' Upload files</button></div>' +
-      '<div id="txnAttachmentList" class="txn-attachment-list">Loading attachments…</div></section></div>';
+      '<div id="txnAttachmentList" class="txn-attachment-list">Loading attachments…</div></section></div></div>';
     root.innerHTML = '<div class="modal-backdrop" id="txnModalBackdrop"><div class="modal wide" role="dialog" aria-modal="true"><div class="modal-header"><h3>Work Order Report Preview</h3><button class="icon-btn" id="txnModalClose">×</button></div><div class="modal-body">' + body + '</div><div class="modal-footer"><button class="btn" id="txnDownloadExcel">Download Excel</button><button class="btn btn-primary" id="txnDownloadPdf">Download PDF</button><button class="btn" id="txnModalDone">Close</button></div></div></div>';
     function close() { root.innerHTML = ''; }
     document.getElementById('txnModalClose').onclick = close; document.getElementById('txnModalDone').onclick = close;
