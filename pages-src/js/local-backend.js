@@ -598,6 +598,7 @@
   }
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  window.bmsSupabase = sb; // Reuse the configured client for transaction attachments.
   const nativeFetch = window.fetch.bind(window);
   const json = (status, body) => ({ ok: status >= 200 && status < 300, status, json: async () => body });
   const today = () => new Date().toISOString().slice(0,10);
