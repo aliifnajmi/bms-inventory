@@ -402,6 +402,7 @@ const NAV = [
   { route: '/stock-in', icon: 'download', label: 'Stock In' },
   { route: '/stock-out', icon: 'upload', label: 'Stock Out' },
   { route: '/transactions', icon: 'list', label: 'Transactions' },
+  { route: '/audit-trail', icon: 'file', label: 'Audit Trail' },
   { section: 'Management' },
   { route: '/categories', icon: 'tag', label: 'Categories' },
   { route: '/reports', icon: 'chart', label: 'Reports' },
@@ -424,6 +425,7 @@ const routes = [
   { rx: /^\/stock-in$/, title: 'Stock In', render: renderStockIn },
   { rx: /^\/stock-out$/, title: 'Stock Out', render: renderStockOut },
   { rx: /^\/transactions$/, title: 'Transactions', render: renderTransactions },
+  { rx: /^\/audit-trail$/, title: 'Audit Trail', render: renderAuditTrail },
   { rx: /^\/categories$/, title: 'Categories', render: renderCategories },
   { rx: /^\/reports$/, title: 'Reports', render: renderReports },
   { rx: /^\/settings$/, title: 'Settings', render: renderSettings },
@@ -962,6 +964,62 @@ async function renderTransactions() {
       };
     },
   };
+}
+
+/* ============================================================
+   TRANSACTION AUDIT TRAIL
+   ============================================================ */
+async function renderAuditTrail() {
+  const html = `
+    <div class="card">
+      <div class="card-head"><h2>${icon('file', 17)} Transaction Audit Trail</h2><p>Review recorded stock movements, timestamps, references and operator fields.</p></div>
+      <div class="toolbar">
+        <div class="search-box">${icon('search', 17)}<input id="auditSearch" placeholder="Search transaction, item, reference, work order…"></div>
+        <select id="auditType"><option value="">All transaction types</option><option value="STOCK_IN">Stock In</option><option value="STOCK_OUT">Stock Out</option><option value="ADJUSTMENT">Adjustment</option></select>
+        <input type="text" id="auditUser" placeholder="Recorded by…" style="padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:13.5px;max-width:160px">
+        <input type="date" id="auditFrom" title="From date" style="padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:13.5px">
+        <input type="date" id="auditTo" title="To date" style="padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:13.5px">
+        <div class="toolbar-actions"><button class="btn" id="btnAuditExport">${icon('file', 16)} Export CSV</button></div>
+      </div>
+      <div class="table-wrap"><table class="data">
+        <thead><tr><th>Transaction Date</th><th>Created At</th><th>Transaction ID</th><th>Action</th><th>Item</th><th class="num">Quantity</th><th>Reference / Work Order</th><th>Recorded By</th><th>Reason / Remarks</th></tr></thead>
+        <tbody id="auditBody"><tr><td colspan="9" class="empty">Loading audit records…</td></tr></tbody>
+      </table></div>
+      <div class="card-foot" id="auditCount"></div>
+    </div>
+    <p class="hint" style="margin:0 0 16px">Audit limitation: this page displays transaction records and saved user fields. Verified individual identity requires Supabase Auth and server-enforced user IDs.</p>`;
+  let records = [];
+  async function load() {
+    const qs = new URLSearchParams();
+    const search = $('#auditSearch').value.trim(), type = $('#auditType').value;
+    const user = $('#auditUser').value.trim(), from = $('#auditFrom').value, to = $('#auditTo').value;
+    if (search) qs.set('search', search);
+    if (type) qs.set('type', type);
+    if (user) qs.set('user', user);
+    if (from) qs.set('from', from);
+    if (to) qs.set('to', to);
+    records = await api('/api/transactions?' + qs.toString());
+    $('#auditBody').innerHTML = records.length ? records.map(t => {
+      const qty = (t.transaction_type === 'STOCK_IN' ? '+' : t.transaction_type === 'STOCK_OUT' ? '−' : Number(t.quantity) > 0 ? '+' : '') + t.quantity;
+      const created = t.created_at ? new Date(t.created_at).toLocaleString() : 'Not available';
+      return `<tr><td style="white-space:nowrap">${esc(t.transaction_date || '—')}</td><td style="white-space:nowrap">${esc(created)}</td>
+        <td><a class="link" href="#/transactions"><strong>${esc(t.transaction_id || '—')}</strong></a></td><td>${typeBadge(t.transaction_type)}</td>
+        <td><a class="link" href="#/items/${t.item_id}">${esc(t.item_code || '—')}</a><span class="sub">${esc(t.item_name || '')}</span></td>
+        <td class="num">${esc(qty)} ${esc(t.unit || '')}</td><td>${esc(t.reference || t.work_order || '—')}${t.area ? '<span class="sub">'+esc(t.area)+'</span>' : ''}</td>
+        <td>${esc(t.user || t.user_name || t.issued_by || t.received_by || 'Not recorded')}</td><td>${esc([t.reason,t.remarks].filter(Boolean).join(' · ') || '—')}</td></tr>`;
+    }).join('') : emptyRow(9, 'No audit records match these filters.');
+    $('#auditCount').textContent = records.length + ' record(s) shown · maximum 1,000 per query';
+  }
+  return { html, bind: () => {
+    const debouncedLoad = debounce(() => load().catch(e => toast(e.message, 'error')), 300);
+    $('#auditSearch').addEventListener('input', debouncedLoad);
+    $('#auditUser').addEventListener('input', debouncedLoad);
+    ['auditType','auditFrom','auditTo'].forEach(id => $('#'+id).addEventListener('change', () => load().catch(e => toast(e.message, 'error'))));
+    $('#btnAuditExport').onclick = () => downloadCsv('bms-audit-trail-' + todayStr() + '.csv',
+      ['Transaction Date','Created At','Transaction ID','Action','Item Code','Item Name','Quantity','Unit','Reference','Work Order','Area','Recorded By','Reason','Remarks'],
+      records.map(t => [t.transaction_date,t.created_at,t.transaction_id,t.transaction_type,t.item_code,t.item_name,t.transaction_type==='STOCK_OUT'?-t.quantity:t.quantity,t.unit,t.reference,t.work_order,t.area,t.user||t.user_name||t.issued_by||t.received_by,t.reason,t.remarks]));
+    load().catch(e => toast(e.message, 'error'));
+  }};
 }
 
 /* ============================================================
