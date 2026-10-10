@@ -47,10 +47,10 @@
       var size = document.getElementById('txnReportSize') ? document.getElementById('txnReportSize').value : 'a4';
       var doc = new jsPDF(size === 'square' ? {orientation:'portrait',unit:'mm',format:[100,100]} : {orientation:'portrait',unit:'mm',format:'a4'});
       var pageWidth = doc.internal.pageSize.getWidth();
-      var logoImage = new Image(); logoImage.crossOrigin = 'anonymous'; logoImage.src = 'https://raw.githubusercontent.com/aliifnajmi/bms-inventory/main/docs/images/mulia.png';
-      try { await new Promise(function(resolve,reject){ logoImage.onload=resolve; logoImage.onerror=reject; }); doc.addImage(logoImage,'PNG',margin,margin,24,11); } catch (_) {}
       var margin = size === 'square' ? 7 : 14;
       var usableWidth = pageWidth - margin * 2;
+      var logoImage = new Image(); logoImage.crossOrigin = 'anonymous'; logoImage.src = 'https://raw.githubusercontent.com/aliifnajmi/bms-inventory/main/docs/images/mulia.png';
+      try { await new Promise(function(resolve,reject){ logoImage.onload=resolve; logoImage.onerror=reject; }); doc.addImage(logoImage,'PNG',margin,margin,24,11); } catch (_) {}
       doc.setFontSize(size === 'square' ? 10 : 15); doc.text('MULIA PROPERTY DEVELOPMENT SDN BHD · MULIA GROUP',margin+27,margin+4); doc.setFontSize(size === 'square' ? 9 : 13); doc.text('WORK ORDER / TRANSACTION REPORT',margin+27,margin+10);
       doc.setFontSize(8); doc.text('Work Order / Transaction ID: '+String(t.transaction_id||''),margin,margin+11);
       doc.text('Date: '+String(t.transaction_date||'—')+'  |  Generated: '+new Date().toLocaleDateString(),margin,margin+16);
