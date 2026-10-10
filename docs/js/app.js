@@ -418,6 +418,27 @@ function buildNav() {
   $('#menuBtn').innerHTML = icon('menu', 20);
 }
 
+
+async function renderTransactionDetail(match) {
+  const requested = decodeURIComponent(match[1] || '');
+  const all = await api('/api/transactions');
+  const t = all.find((x) => String(x.id) === requested || String(x.transaction_id) === requested);
+  if (!t) return { html: '<div class="card"><div class="card-body"><h2>Transaction not found</h2><p>The record may have been removed or is not available in this data source.</p><a class="btn" href="#/transactions">Back to Transactions</a></div></div>' };
+  const fields = [
+    ['Transaction ID', t.transaction_id], ['Date', t.transaction_date], ['Type', t.transaction_type],
+    ['Item Code', t.item_code], ['Item Name', t.item_name], ['Quantity', (t.transaction_type === 'STOCK_OUT' ? '−' : t.transaction_type === 'STOCK_IN' ? '+' : '') + t.quantity + ' ' + (t.unit || '')],
+    ['Reference', t.reference], ['Supplier', t.supplier], ['Issued To', t.issued_to], ['Issued By', t.issued_by],
+    ['Received By', t.received_by], ['Work Order', t.work_order], ['Area', t.area], ['Reason', t.reason],
+    ['Remarks', t.remarks], ['Recorded By', t.user || t.user_name], ['Created At', t.created_at ? new Date(t.created_at).toLocaleString() : '—']
+  ];
+  return {
+    html: '<div class="card"><div class="card-head"><div><h2>Transaction Details</h2><p>Full record and stock movement information</p></div><div class="toolbar-actions"><a class="btn" href="#/transactions">← Back to Transactions</a><button class="btn btn-primary" id="btnOpenTxnReport">View / Print Report</button></div></div><div class="card-body"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">' +
+      fields.map((p) => '<div style="padding:12px;border:1px solid var(--border);border-radius:10px;min-width:0"><div style="font-size:12px;color:var(--muted);margin-bottom:5px">'+esc(p[0])+'</div><strong style="overflow-wrap:anywhere">'+esc(p[1] == null || p[1] === '' ? '—' : p[1])+'</strong></div>').join('') +
+      '</div><p class="hint" style="margin-top:16px">Use “View / Print Report” to open the report preview. Signature and attachment fields are shown only when recorded or supported by the current system.</p></div></div>',
+    bind: function() { const b = document.getElementById('btnOpenTxnReport'); if (b) b.onclick = function() { if (typeof window.bmsOpenTransactionPreview === 'function') window.bmsOpenTransactionPreview(t); else toast('Report preview script is unavailable. Refresh the page and try again.', 'error'); }; }
+  };
+}
+
 /* ---------- router ---------- */
 const routes = [
   { rx: /^\/$/, title: 'Dashboard', render: renderDashboard },
@@ -425,6 +446,7 @@ const routes = [
   { rx: /^\/stock-in$/, title: 'Stock In', render: renderStockIn },
   { rx: /^\/stock-out$/, title: 'Stock Out', render: renderStockOut },
   { rx: /^\/transactions$/, title: 'Transactions', render: renderTransactions },
+  { rx: /^\/transactions\/([^/]+)$/, title: 'Transaction Details', render: renderTransactionDetail },
   { rx: /^\/audit-trail$/, title: 'Audit Trail', render: renderAuditTrail },
   { rx: /^\/categories$/, title: 'Categories', render: renderCategories },
   { rx: /^\/reports$/, title: 'Reports', render: renderReports },
@@ -923,7 +945,7 @@ async function renderTransactions() {
           .map(
             (t) => `<tr>
               <td style="white-space:nowrap">${esc(t.transaction_date)}</td>
-              <td><strong>${esc(t.transaction_id)}</strong></td>
+              <td><a class="link" href="#/transactions/${encodeURIComponent(t.id)}" title="View transaction details"><strong>${esc(t.transaction_id)}</strong></a><span class="sub">View details ↗</span></td>
               <td>${typeBadge(t.transaction_type)}</td>
               <td><a class="link" href="#/items/${t.item_id}">${esc(t.item_code)}</a></td>
               <td>${esc(t.item_name)}${t.work_order ? `<span class="sub">${esc(t.work_order)}${t.area ? ' · ' + esc(t.area) : ''}</span>` : ''}</td>
