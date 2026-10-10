@@ -928,7 +928,7 @@ async function renderTransactions() {
       <div class="table-wrap">
         <table class="data">
           <thead><tr>
-            <th>Date</th><th>Transaction ID</th><th>Type</th><th>Item Code</th><th>Item Name</th>
+            <th>Date</th><th>Transaction ID</th><th>Type</th><th>Item Code</th><th>Item Name</th><th>Category</th>
             <th class="num">Quantity</th><th>Reference</th><th>User</th>
           </tr></thead>
           <tbody id="txnBody"></tbody>
@@ -949,13 +949,14 @@ async function renderTransactions() {
               <td>${typeBadge(t.transaction_type)}</td>
               <td><a class="link" href="#/items/${t.item_id}">${esc(t.item_code)}</a></td>
               <td>${esc(t.item_name)}${t.work_order ? `<span class="sub">${esc(t.work_order)}${t.area ? ' · ' + esc(t.area) : ''}</span>` : ''}</td>
+              <td>${esc(t.category || '—')}</td>
               <td class="num">${signedQty(t)} ${esc(t.unit)}</td>
               <td>${esc(t.reference || t.work_order || '—')}</td>
               <td>${esc(t.user || '—')}</td>
             </tr>`
           )
           .join('')
-      : emptyRow(8);
+      : emptyRow(9);
     $('#txnCount').textContent = `${txns.length} transaction(s)`;
   }
 
@@ -980,8 +981,8 @@ async function renderTransactions() {
       $('#btnExportTxn').onclick = () => {
         downloadCsv(
           `bms-transactions-${todayStr()}.csv`,
-          ['Date', 'Transaction ID', 'Type', 'Item Code', 'Item Name', 'Quantity', 'Unit', 'Reference', 'Supplier', 'Issued To', 'Work Order', 'Area', 'Reason', 'User', 'Remarks'],
-          txns.map((t) => [t.transaction_date, t.transaction_id, t.transaction_type, t.item_code, t.item_name, t.transaction_type === 'STOCK_OUT' ? -t.quantity : t.quantity, t.unit, t.reference, t.supplier, t.issued_to, t.work_order, t.area, t.reason, t.user, t.remarks])
+          ['Date', 'Transaction ID', 'Type', 'Item Code', 'Item Name', 'Category', 'Quantity', 'Unit', 'Reference', 'Supplier', 'Issued To', 'Work Order', 'Area', 'Reason', 'User', 'Remarks'],
+          txns.map((t) => [t.transaction_date, t.transaction_id, t.transaction_type, t.item_code, t.item_name, t.category || '', t.transaction_type === 'STOCK_OUT' ? -t.quantity : t.quantity, t.unit, t.reference, t.supplier, t.issued_to, t.work_order, t.area, t.reason, t.user, t.remarks])
         );
       };
     },
