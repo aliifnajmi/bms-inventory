@@ -88,12 +88,23 @@
 
   const realFetch = window.fetch.bind(window);
 
+  function classifyCategory(name) { const n=String(name||'').toLowerCase(); if(/conduit|elbow|socket|saddle|circular box|t-box/.test(n))return 'Conduits & Raceways'; if(/cable|cat6/.test(n))return 'Cables & Wires'; if(/relay|mcb|plug|rj45/.test(n))return 'Electrical & Control Accessories'; if(/sensor|t5 led/.test(n))return 'Sensors & Lighting'; if(/masking tape|insulation tape|solder wire|cleaner|sealant|wd40|wallplug|puller rope/.test(n))return 'Consumables, Chemicals & Maintenance'; return 'Tools & Equipment'; }
+  function migrateInventoryCategories(data) {
+    if(!data||!Array.isArray(data.items)||!Array.isArray(data.categories))return;
+    const standard=[["Conduits & Raceways","Conduits, fittings, boxes and cable containment."],["Cables & Wires","Electrical, communication and control cables."],["Electrical & Control Accessories","Electrical protection, switching and connection accessories."],["Sensors & Lighting","BMS field sensors and lighting components."],["Consumables, Chemicals & Maintenance","Consumables, cleaners, adhesives and maintenance materials."],["Tools & Equipment","Portable tools, test equipment and ladders."]];
+    data.items.forEach(function(i){i.category=classifyCategory(i.item_name||i.description||'');if(!i.subcategory)i.subcategory=i.category==='Conduits & Raceways'?'Conduits & Fittings':i.category==='Cables & Wires'?'Power & Data Cables':i.category==='Electrical & Control Accessories'?'Electrical Accessories':i.category==='Sensors & Lighting'?'Field Devices & Lamps':i.category==='Consumables, Chemicals & Maintenance'?'Maintenance Consumables':'Tools';});
+    let next=data.categories.reduce(function(n,c){return Math.max(n,Number(c.id)||0);},0)+1;
+    standard.forEach(function(e){const old=data.categories.find(function(c){return c.name===e[0];});if(old)old.description=e[1];else data.categories.push({id:next++,name:e[0],description:e[1],created_at:nowISO()});});
+    data.categories=data.categories.filter(function(c){return standard.some(function(e){return e[0]===c.name;})||data.items.some(function(i){return i.category===c.name;});});
+  }
   function ensureLoaded() {
     if (ready) return ready;
     ready = (async () => {
       const raw = localStorage.getItem(LS_KEY);
       if (raw) {
         db = JSON.parse(raw);
+        migrateInventoryCategories(db);
+        save();
         return;
       }
       if (!SEED) throw new Error('Demo dataset is not embedded — run: npm run build:pages');
