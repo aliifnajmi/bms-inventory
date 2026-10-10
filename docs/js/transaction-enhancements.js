@@ -11,7 +11,7 @@
   }
   function openTxnPreview(t, refresh) {
     ensureReportStyles();
-    var sb = window.bmsSupabase; if (!sb) return alert('Supabase attachment service is not connected. Refresh the page.');
+    var sb = window.bmsSupabase || null;
     var root = document.getElementById('modalRoot');
     var reference = String(t.reference || '').trim();
     var body = '<div class="txn-report-controls"><label for="txnReportSize">Report layout</label><select id="txnReportSize"><option value="a4">A4 — Print / File</option><option value="square">Square — Compact card</option></select><span>Transaction ID is used as the Work Order reference.</span></div>' +
@@ -93,6 +93,7 @@
     } else { refBox.innerHTML = '<strong>Reference</strong><p>' + txnEsc(reference || 'No reference recorded. Supporting documents can be attached below.') + '</p>'; }
     async function loadFiles() {
       var list = document.getElementById('txnAttachmentList'), count = document.getElementById('txnAttachCount');
+      if (!sb || !sb.storage || typeof sb.from !== 'function') { list.innerHTML = '<p class="hint">Attachment storage is unavailable in this session. Report preview and exports remain available.</p>'; count.textContent = 'Unavailable'; var upBtn=document.getElementById('txnAttachmentUpload'); if(upBtn) upBtn.disabled=true; return; }
       var q = await sb.from('transaction_attachments').select('*').eq('transaction_id', Number(t.id)).order('created_at', {ascending:false});
       if (q.error) { list.innerHTML = '<p class="form-error">Could not load files: ' + txnEsc(q.error.message) + '</p>'; count.textContent = 'Error'; return; }
       var files = q.data || []; count.textContent = files.length + ' file(s)';
@@ -102,6 +103,7 @@
       Array.from(list.querySelectorAll('[data-delete-file]')).forEach(function(btn) { btn.onclick=async function() { var f=files.find(function(x){return String(x.id)===String(btn.dataset.deleteFile);}); if(!f||!confirm('Delete attachment '+f.file_name+'?')) return; var rem=await sb.storage.from('transaction-attachments').remove([f.storage_path]); if(rem.error) return alert(rem.error.message); var del=await sb.from('transaction_attachments').delete().eq('id',f.id); if(del.error) return alert(del.error.message); await loadFiles(); if(refresh) refresh(); }; });
     }
     document.getElementById('txnAttachmentUpload').onclick = async function() {
+      if (!sb || !sb.storage || typeof sb.from !== 'function') return alert('Attachment storage is unavailable. Report preview and exports can still be used.');
       var input=document.getElementById('txnAttachmentInput'), files=Array.from(input.files||[]); if(!files.length) return alert('Choose files first.');
       if(files.some(function(f){return f.size>10*1024*1024;})) return alert('Each file must be 10 MB or smaller.');
       var allowed=/^(application\/pdf|image\/(jpeg|png|webp)|text\/(plain|csv)|application\/(vnd\.openxmlformats-officedocument\.(wordprocessingml\.document|spreadsheetml\.sheet)|msword|vnd\.ms-excel))$/i;
