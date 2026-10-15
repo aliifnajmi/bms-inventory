@@ -559,14 +559,19 @@ async function renderDashboard() {
         </button>`).join('')}
       </div>
 
-      <div class="card dashboard-full-card">
-        <div class="card-head"><h2>${icon('chart', 17)} Stock Overview</h2><p>Total received vs issued vs current balance (all items)</p></div>
-        <div class="card-body chart-box" id="chartOverview"></div>
-      </div>
-
-      <div class="card dashboard-full-card">
-        <div class="card-head"><h2>${icon('layers', 17)} Inventory by Category</h2><p>Current stock quantity per category</p></div>
-        <div class="card-body chart-box" id="chartCategory"></div>
+      <div class="dashboard-chart-grid">
+        <div class="card dashboard-chart-card">
+          <div class="card-head"><h2>${icon('chart', 17)} Stock Movement</h2><p>Received, issued and current balance</p></div>
+          <div class="card-body dashboard-chart-body"><div class="dashboard-canvas-wrap"><canvas id="chartOverview" role="img" aria-label="Bar chart showing stock in, stock out and current balance"></canvas></div></div>
+        </div>
+        <div class="card dashboard-chart-card">
+          <div class="card-head"><h2>${icon('layers', 17)} Stock by Category</h2><p>How current stock is distributed</p></div>
+          <div class="card-body dashboard-chart-body"><div class="dashboard-doughnut-wrap"><canvas id="chartCategory" role="img" aria-label="Doughnut chart showing stock quantity by category"></canvas></div></div>
+        </div>
+        <div class="card dashboard-chart-card dashboard-status-card">
+          <div class="card-head"><h2>${icon('alert', 17)} Inventory Health</h2><p>Item count by stock status</p></div>
+          <div class="card-body dashboard-chart-body"><div class="dashboard-doughnut-wrap"><canvas id="chartStatus" role="img" aria-label="Pie chart showing normal, low stock and out of stock items"></canvas></div></div>
+        </div>
       </div>
 
       <div class="card dashboard-full-card">
@@ -600,15 +605,64 @@ async function renderDashboard() {
         const s = stats[Number(b.dataset.stat)];
         b.onclick = typeof s.go === 'function' ? s.go : () => { location.hash = s.go; };
       });
-      barChart($('#chartOverview'), [
-        { label: 'Stock In', value: d.stock_overview.stock_in, color: '#16a34a' },
-        { label: 'Stock Out', value: d.stock_overview.stock_out, color: '#dc2626' },
-        { label: 'Balance', value: d.stock_overview.balance, color: '#2563eb' },
-      ]);
-      hBarChart(
-        $('#chartCategory'),
-        d.by_category.map((c) => ({ label: c.category, value: c.total_stock }))
-      );
+      if (window.Chart) {
+        (window.__bmsDashboardCharts || []).forEach((chart) => { try { chart.destroy(); } catch (_) {} });
+        const palette = ['#0A84FF', '#30D158', '#FF9F0A', '#FF453A', '#5E5CE6', '#64D2FF', '#BF5AF2', '#AC8E68'];
+        const chartBase = {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 500 },
+          plugins: {
+            legend: { labels: { usePointStyle: true, boxWidth: 8, padding: 16, color: '#64748b', font: { family: '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif', size: 11 } } },
+            tooltip: { backgroundColor: '#172033', padding: 11, cornerRadius: 10, displayColors: true }
+          }
+        };
+        const charts = [];
+        const overviewCanvas = $('#chartOverview');
+        if (overviewCanvas) charts.push(new Chart(overviewCanvas, {
+          type: 'bar',
+          data: {
+            labels: ['Stock In', 'Stock Out', 'Current Balance'],
+            datasets: [{ label: 'Quantity', data: [Number(d.stock_overview.stock_in)||0, Number(d.stock_overview.stock_out)||0, Number(d.stock_overview.balance)||0],
+              backgroundColor: ['#30D158', '#FF453A', '#0A84FF'], borderRadius: 8, maxBarThickness: 54 }]
+          },
+          options: { ...chartBase, plugins: { ...chartBase.plugins, legend: { display: false } }, scales: {
+            x: { grid: { display: false }, ticks: { color: '#64748b' }, border: { display: false } },
+            y: { beginAtZero: true, grid: { color: '#eef2f7' }, ticks: { color: '#64748b', precision: 0 }, border: { display: false } }
+          }}
+        }));
+        const categoryCanvas = $('#chartCategory');
+        if (categoryCanvas) {
+          const categories = d.by_category || [];
+          charts.push(new Chart(categoryCanvas, {
+            type: 'doughnut',
+            data: { labels: categories.map(c => c.category), datasets: [{ data: categories.map(c => Number(c.total_stock)||0),
+              backgroundColor: categories.map((_, i) => palette[i % palette.length]), borderWidth: 3, borderColor: '#fff', hoverOffset: 5 }] },
+            options: { ...chartBase, cutout: '66%', plugins: { ...chartBase.plugins, legend: { position: window.innerWidth < 620 ? 'bottom' : 'right', labels: { ...chartBase.plugins.legend.labels, padding: 12 } } } }
+          }));
+        }
+        const statusCanvas = $('#chartStatus');
+        if (statusCanvas) {
+          const total = Number(d.total_items)||0;
+          const low = Number(d.low_stock_count)||0;
+          const out = Number(d.out_of_stock_count)||0;
+          const normal = Math.max(0, total - low - out);
+          charts.push(new Chart(statusCanvas, {
+            type: 'pie',
+            data: { labels: ['Normal', 'Low Stock', 'Out of Stock'], datasets: [{ data: [normal, low, out],
+              backgroundColor: ['#30D158', '#FF9F0A', '#FF453A'], borderColor: '#fff', borderWidth: 3, hoverOffset: 6 }] },
+            options: { ...chartBase, plugins: { ...chartBase.plugins, legend: { position: window.innerWidth < 620 ? 'bottom' : 'right', labels: { ...chartBase.plugins.legend.labels, padding: 14 } } } }
+          }));
+        }
+        window.__bmsDashboardCharts = charts;
+      } else {
+        barChart($('#chartOverview'), [
+          { label: 'Stock In', value: d.stock_overview.stock_in, color: '#16a34a' },
+          { label: 'Stock Out', value: d.stock_overview.stock_out, color: '#dc2626' },
+          { label: 'Balance', value: d.stock_overview.balance, color: '#2563eb' },
+        ]);
+        hBarChart($('#chartCategory'), d.by_category.map((c) => ({ label: c.category, value: c.total_stock })));
+      }
 
       const exportRows = {
         overview: [
