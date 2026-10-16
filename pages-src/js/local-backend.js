@@ -560,6 +560,7 @@
       if ((m = path.match(/^\/api\/items\/(\d+)$/))) {
         if (method === 'GET') return jsonResponse(200, itemDetail(m[1]));
         if (method === 'PUT') return jsonResponse(200, updateItem(m[1], body));
+        if (method === 'DELETE') return jsonResponse(409, { error: 'Item deletion is disabled in local demo mode. Use the Supabase cloud database.' });
       }
       if (method === 'GET' && path === '/api/categories') return jsonResponse(200, listCategories());
       if (method === 'POST' && path === '/api/categories') return jsonResponse(200, createCategory(body));
@@ -705,6 +706,16 @@
           const r=await sb.from('items').update(patch).eq('id',id).select('*').single();
           if(r.error)throw r.error;
           const fresh=await load();return json(200,fresh.items.find(i=>i.id===id)||r.data);
+        }
+        if(method==='DELETE'){
+          const item=items.find(i=>i.id===id);
+          if(!item) return json(404,{error:'Item not found.'});
+          const linked=await sb.from('transactions').select('id',{count:'exact',head:true}).eq('item_id',id);
+          if(linked.error)throw linked.error;
+          if((linked.count||0)>0) return json(409,{error:`Cannot delete ${item.item_code}: ${linked.count} transaction record(s) are linked to this item. Keep the item for audit history; you may rename it or set its stock to zero instead.`});
+          const removed=await sb.from('items').delete().eq('id',id).select('id').maybeSingle();
+          if(removed.error)throw removed.error;
+          return json(200,{ok:true,id});
         }
       }
 
