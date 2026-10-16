@@ -274,14 +274,33 @@ function openItemModal(id) {
   openModal(
     id ? `Edit Item — ${item.item_code || ''}` : 'Add New Item',
     itemFormHtml(item) +
-      `<div class="form-actions">
+      `<div class="form-actions item-form-actions">
          <button class="btn btn-primary" id="btnSaveItem">${icon('check', 16)} Save Item</button>
          <button class="btn" id="btnCancelItem">Cancel</button>
+         ${id ? `<button class="btn btn-danger" id="btnDeleteItem">${icon('trash', 16)} Delete Item</button>` : ''}
        </div>`,
     '',
     true
   );
   $('#btnCancelItem').onclick = closeModal;
+  const deleteBtn = $('#btnDeleteItem');
+  if (deleteBtn) deleteBtn.onclick = async () => {
+    const label = `${item.item_code || 'this item'} — ${item.item_name || ''}`;
+    if (!window.confirm(`Delete ${label}? This action cannot be undone. Items with transaction history cannot be deleted.`)) return;
+    deleteBtn.disabled = true;
+    deleteBtn.innerHTML = icon('refresh', 16) + ' Deleting…';
+    try {
+      await api(`/api/items/${id}`, { method: 'DELETE' });
+      closeModal();
+      toast('Item deleted successfully.');
+      await reloadMaster();
+      router();
+    } catch (e) {
+      deleteBtn.disabled = false;
+      deleteBtn.innerHTML = icon('trash', 16) + ' Delete Item';
+      modalError(e.message || 'Unable to delete item.');
+    }
+  };
   $('#btnSaveItem').onclick = async () => {
     const payload = {
       item_code: $('#f_code').value,
@@ -1395,14 +1414,32 @@ async function renderItemDetail(m) {
 /* ---------- init ---------- */
 async function init() {
   buildNav();
+  const sidebar = $('#sidebar');
+  const overlay = $('#sidebarOverlay');
+  const closeMobileSidebar = () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+  };
   $('#menuBtn').onclick = () => {
-    $('#sidebar').classList.toggle('open');
-    $('#sidebarOverlay').classList.toggle('show');
+    if (window.matchMedia('(min-width: 901px)').matches) {
+      document.body.classList.toggle('sidebar-collapsed');
+    } else {
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('show');
+    }
   };
-  $('#sidebarOverlay').onclick = () => {
-    $('#sidebar').classList.remove('open');
-    $('#sidebarOverlay').classList.remove('show');
-  };
+  overlay.onclick = closeMobileSidebar;
+  $('#nav').addEventListener('click', (event) => {
+    const link = event.target.closest('a[data-route]');
+    if (!link) return;
+    const route = link.dataset.route;
+    if (!route) return;
+    if (location.hash !== `#${route}`) location.hash = route;
+    if (window.matchMedia('(max-width: 900px)').matches) closeMobileSidebar();
+  });
+  window.addEventListener('resize', () => {
+    if (window.matchMedia('(min-width: 901px)').matches) closeMobileSidebar();
+  });
   window.addEventListener('hashchange', router);
   try {
     await reloadMaster();
