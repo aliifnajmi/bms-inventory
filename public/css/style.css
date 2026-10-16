@@ -763,3 +763,24 @@ button.stat:hover { transform:translateY(-2px); border-color:#b8d7ff; box-shadow
 @media (prefers-reduced-motion: reduce) {
   .qa, .stat { transition:none !important; }
 }
+
+/* Sidebar navigation reliability + desktop collapse */
+.nav { position:relative; z-index:2; pointer-events:auto; }
+.nav a { cursor:pointer; position:relative; }
+.menu-btn { display:inline-flex; }
+body.sidebar-collapsed .sidebar { transform:translateX(-100%); }
+body.sidebar-collapsed .main { margin-left:0; }
+@media (min-width:901px) {
+  .sidebar { transition:transform .22s ease; }
+  .main { transition:margin-left .22s ease; }
+  body.sidebar-collapsed .sidebar { visibility:hidden; pointer-events:none; }
+  body.sidebar-collapsed .main { margin-left:0; }
+}
+.item-form-actions { display:flex; flex-wrap:wrap; gap:10px; }
+.btn-danger { color:#b91c1c; background:#fff; border:1px solid #fecaca; }
+.btn-danger:hover { background:#fef2f2; border-color:#f87171; }
+.btn-danger:disabled { opacity:.65; cursor:wait; }
+@media(max-width:620px) {
+  .item-form-actions { display:grid; grid-template-columns:1fr; }
+  .item-form-actions .btn { width:100%; }
+}
