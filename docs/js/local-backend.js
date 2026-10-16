@@ -88,12 +88,23 @@
 
   const realFetch = window.fetch.bind(window);
 
+  function classifyCategory(name) { const n=String(name||'').toLowerCase(); if(/conduit|elbow|socket|saddle|circular box|t-box/.test(n))return 'Conduits & Raceways'; if(/cable|cat6/.test(n))return 'Cables & Wires'; if(/relay|mcb|plug|rj45/.test(n))return 'Electrical & Control Accessories'; if(/sensor|t5 led/.test(n))return 'Sensors & Lighting'; if(/masking tape|insulation tape|solder wire|cleaner|sealant|wd40|wallplug|puller rope/.test(n))return 'Consumables, Chemicals & Maintenance'; return 'Tools & Equipment'; }
+  function migrateInventoryCategories(data) {
+    if(!data||!Array.isArray(data.items)||!Array.isArray(data.categories))return;
+    const standard=[["Conduits & Raceways","Conduits, fittings, boxes and cable containment."],["Cables & Wires","Electrical, communication and control cables."],["Electrical & Control Accessories","Electrical protection, switching and connection accessories."],["Sensors & Lighting","BMS field sensors and lighting components."],["Consumables, Chemicals & Maintenance","Consumables, cleaners, adhesives and maintenance materials."],["Tools & Equipment","Portable tools, test equipment and ladders."]];
+    data.items.forEach(function(i){i.category=classifyCategory(i.item_name||i.description||'');if(/temperature sensor|duct temperature sensor|dpt fll tube staircase sensor/i.test(i.item_name||'')&&!i.remarks)i.remarks='VERIFY CONDITION BEFORE ISSUE: mark as NEW or DEFECTIVE after physical inspection.';if(!i.subcategory)i.subcategory=i.category==='Conduits & Raceways'?'Conduits & Fittings':i.category==='Cables & Wires'?'Power & Data Cables':i.category==='Electrical & Control Accessories'?'Electrical Accessories':i.category==='Sensors & Lighting'?'Field Devices & Lamps':i.category==='Consumables, Chemicals & Maintenance'?'Maintenance Consumables':'Tools';});
+    let next=data.categories.reduce(function(n,c){return Math.max(n,Number(c.id)||0);},0)+1;
+    standard.forEach(function(e){const old=data.categories.find(function(c){return c.name===e[0];});if(old)old.description=e[1];else data.categories.push({id:next++,name:e[0],description:e[1],created_at:nowISO()});});
+    data.categories=data.categories.filter(function(c){return standard.some(function(e){return e[0]===c.name;})||data.items.some(function(i){return i.category===c.name;});});
+  }
   function ensureLoaded() {
     if (ready) return ready;
     ready = (async () => {
       const raw = localStorage.getItem(LS_KEY);
       if (raw) {
         db = JSON.parse(raw);
+        migrateInventoryCategories(db);
+        save();
         return;
       }
       if (!SEED) throw new Error('Demo dataset is not embedded — run: npm run build:pages');
@@ -549,6 +560,7 @@
       if ((m = path.match(/^\/api\/items\/(\d+)$/))) {
         if (method === 'GET') return jsonResponse(200, itemDetail(m[1]));
         if (method === 'PUT') return jsonResponse(200, updateItem(m[1], body));
+        if (method === 'DELETE') return jsonResponse(409, { error: 'Item deletion is disabled in local demo mode. Use the Supabase cloud database.' });
       }
       if (method === 'GET' && path === '/api/categories') return jsonResponse(200, listCategories());
       if (method === 'POST' && path === '/api/categories') return jsonResponse(200, createCategory(body));
@@ -694,6 +706,16 @@
           const r=await sb.from('items').update(patch).eq('id',id).select('*').single();
           if(r.error)throw r.error;
           const fresh=await load();return json(200,fresh.items.find(i=>i.id===id)||r.data);
+        }
+        if(method==='DELETE'){
+          const item=items.find(i=>i.id===id);
+          if(!item) return json(404,{error:'Item not found.'});
+          const linked=await sb.from('transactions').select('id',{count:'exact',head:true}).eq('item_id',id);
+          if(linked.error)throw linked.error;
+          if((linked.count||0)>0) return json(409,{error:`Cannot delete ${item.item_code}: ${linked.count} transaction record(s) are linked to this item. Keep the item for audit history; you may rename it or set its stock to zero instead.`});
+          const removed=await sb.from('items').delete().eq('id',id).select('id').maybeSingle();
+          if(removed.error)throw removed.error;
+          return json(200,{ok:true,id});
         }
       }
 
