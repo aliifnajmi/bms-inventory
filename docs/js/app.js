@@ -302,10 +302,10 @@ function openItemModal(id) {
     });
     return prefix + '-' + String(Math.max(0, ...nums) + 1).padStart(4, '0');
   }
-  if (!id) {
-    categoryInput.addEventListener('change', () => { codeInput.value = suggestItemCode(categoryInput.value); });
-    if (categoryInput.value) codeInput.value = suggestItemCode(categoryInput.value);
-  }
+  categoryInput.addEventListener('change', () => {
+    if (!id || categoryInput.value !== item.category) codeInput.value = suggestItemCode(categoryInput.value);
+  });
+  if (!id && categoryInput.value) codeInput.value = suggestItemCode(categoryInput.value);
   const deleteBtn = $('#btnDeleteItem');
   if (deleteBtn) deleteBtn.onclick = async () => {
     const label = `${item.item_code || 'this item'} — ${item.item_name || ''}`;
