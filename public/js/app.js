@@ -574,63 +574,17 @@ async function renderDashboard() {
     : emptyRow(6, 'No transactions yet.');
 
   const html = `
-    <div class="dashboard-page">
-      <div class="dashboard-toolbar">
-        <div>
-          <div class="section-title" style="margin-top:0">Quick Actions</div>
-          <p class="muted">Common BMS inventory operations</p>
-        </div>
-        <div class="report-actions">
-          <button class="btn" id="btnDashboardExcel">${icon('file', 16)} Generate Excel</button>
-          <button class="btn btn-primary" id="btnDashboardPdf">${icon('file', 16)} Generate PDF</button>
-        </div>
-      </div>
-
-      <div class="quick-actions">
-        ${actions.map((a, i) => `<button class="qa" data-qa="${i}">
-          <span class="qa-ic" style="background:${a.color}">${icon(a.ic, 21)}</span>${esc(a.label)}
-        </button>`).join('')}
-      </div>
-
-      <div class="section-title">Overview</div>
-      <div class="stats">
-        ${stats.map((s, i) => `<button class="stat" data-stat="${i}">
-          <span class="ic-wrap" style="background:${s.bg};color:${s.color}">${icon(s.ic, 22)}</span>
-          <span><span class="v">${s.value}</span><span class="l" style="display:block">${esc(s.label)}</span></span>
-        </button>`).join('')}
-      </div>
-
-      <div class="card dashboard-full-card">
-        <div class="card-head"><h2>${icon('chart', 17)} Stock Overview</h2><p>Total received vs issued vs current balance (all items)</p></div>
-        <div class="card-body chart-box" id="chartOverview"></div>
-      </div>
-
-      <div class="card dashboard-full-card">
-        <div class="card-head"><h2>${icon('layers', 17)} Inventory by Category</h2><p>Current stock quantity per category</p></div>
-        <div class="card-body chart-box" id="chartCategory"></div>
-      </div>
-
-      <div class="card dashboard-full-card">
-        <div class="card-head"><h2>${icon('alert', 17)} Low Stock Items</h2><p>Items at or below minimum stock level</p></div>
-        <div class="table-wrap">
-          <table class="data">
-            <thead><tr><th>Item Code</th><th>Item Name</th><th class="num">Current Stock</th><th class="num">Minimum Stock</th><th>Status</th></tr></thead>
-            <tbody>${lowRows}</tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="card dashboard-full-card">
-        <div class="card-head"><h2>${icon('list', 17)} Recent Transactions</h2><p>Latest 10 stock movements</p></div>
-        <div class="table-wrap">
-          <table class="data">
-            <thead><tr><th>Date</th><th>Txn ID</th><th>Type</th><th>Item</th><th class="num">Qty</th><th>User</th></tr></thead>
-            <tbody>${recentRows}</tbody>
-          </table>
-        </div>
-      </div>
+    <div class="dashboard-page bento-dashboard">
+      <section class="dashboard-hero bento-span-12"><div class="dashboard-hero-copy"><span class="dashboard-eyebrow">EXCHANGE 106 · BMS STORE</span><h1>Inventory at a glance.</h1><p>Real-time stock visibility, movement and category health in one place.</p></div><div class="dashboard-hero-actions"><button class="btn btn-light" id="btnDashboardExcel">${icon('file',16)} Export Excel</button><button class="btn btn-primary" id="btnDashboardPdf">${icon('file',16)} Export PDF</button></div></section>
+      <section class="bento-quick bento-span-12"><div class="bento-section-heading"><h2>Quick actions</h2><p>Common store operations</p></div><div class="quick-actions">${actions.map((a,i)=>`<button class="qa" data-qa="${i}"><span class="qa-ic" style="background:${a.color}">${icon(a.ic,21)}</span><span>${esc(a.label)}</span></button>`).join('')}</div></section>
+      <section class="bento-stats bento-span-12">${stats.map((st,i)=>`<button class="stat" data-stat="${i}"><span class="ic-wrap" style="background:${st.bg};color:${st.color}">${icon(st.ic,22)}</span><span class="stat-copy"><span class="v">${Number(st.value||0).toLocaleString()}</span><span class="l">${esc(st.label)}</span></span><span class="stat-arrow" aria-hidden="true">↗</span></button>`).join('')}</section>
+      <section class="card dashboard-chart-card bento-card bento-span-7"><div class="card-head"><div><h2>${icon('chart',17)} Stock movement overview</h2><p>Received, issued and current balance</p></div><span class="bento-chip">QUANTITY</span></div><div class="dashboard-chart-body"><div class="dashboard-canvas-wrap"><canvas id="dashboardStockChart" aria-label="Stock movement overview chart"></canvas></div></div></section>
+      <section class="card dashboard-chart-card bento-card bento-span-5"><div class="card-head"><div><h2>${icon('layers',17)} Stock by category</h2><p>How current stock is distributed</p></div><span class="bento-chip">CATEGORIES</span></div><div class="dashboard-chart-body"><div class="dashboard-doughnut-wrap"><canvas id="chartCategory" aria-label="Inventory by category pie chart"></canvas></div></div></section>
+      <section class="card dashboard-chart-card bento-card bento-span-7"><div class="card-head"><div><h2>${icon('activity',17)} Recent movement trend</h2><p>Net quantity movement from latest transactions</p></div></div><div class="dashboard-chart-body"><div class="dashboard-canvas-wrap"><canvas id="dashboardMovementChart" aria-label="Recent inventory movement line chart"></canvas></div></div></section>
+      <section class="card dashboard-chart-card bento-card bento-span-5 dashboard-status-card"><div class="card-head"><div><h2>${icon('alert',17)} Stock health</h2><p>Items by current stock condition</p></div></div><div class="dashboard-chart-body"><div class="dashboard-doughnut-wrap"><canvas id="dashboardHealthChart" aria-label="Stock health doughnut chart"></canvas></div><div class="dashboard-health-summary"><span><i class="health-dot healthy"></i> Healthy <strong>${Math.max(0,Number(d.total_items||0)-Number(d.low_stock_count||0)-Number(d.out_of_stock_count||0))}</strong></span><span><i class="health-dot low"></i> Low stock <strong>${Number(d.low_stock_count||0)}</strong></span><span><i class="health-dot empty"></i> Out of stock <strong>${Number(d.out_of_stock_count||0)}</strong></span></div></div></section>
+      <section class="card dashboard-full-card bento-card bento-span-12"><div class="card-head"><div><h2>${icon('alert',17)} Low stock items</h2><p>Items at or below minimum stock level</p></div><a class="link" href="#/inventory">View inventory →</a></div><div class="table-wrap"><table class="data"><thead><tr><th>Item Code</th><th>Item Name</th><th class="num">Current Stock</th><th class="num">Minimum Stock</th><th>Status</th></tr></thead><tbody>${lowRows}</tbody></table></div></section>
+      <section class="card dashboard-full-card bento-card bento-span-12"><div class="card-head"><div><h2>${icon('list',17)} Recent transactions</h2><p>Latest 10 stock movements</p></div><a class="link" href="#/transactions">View all →</a></div><div class="table-wrap"><table class="data"><thead><tr><th>Date</th><th>Txn ID</th><th>Type</th><th>Item</th><th class="num">Qty</th><th>User</th></tr></thead><tbody>${recentRows}</tbody></table></div></section>
     </div>`;
-
 
 
   return {
@@ -641,15 +595,18 @@ async function renderDashboard() {
         const s = stats[Number(b.dataset.stat)];
         b.onclick = typeof s.go === 'function' ? s.go : () => { location.hash = s.go; };
       });
-      barChart($('#chartOverview'), [
-        { label: 'Stock In', value: d.stock_overview.stock_in, color: '#16a34a' },
-        { label: 'Stock Out', value: d.stock_overview.stock_out, color: '#dc2626' },
-        { label: 'Balance', value: d.stock_overview.balance, color: '#2563eb' },
-      ]);
-      hBarChart(
-        $('#chartCategory'),
-        d.by_category.map((c) => ({ label: c.category, value: c.total_stock }))
-      );
+      window.__bmsDashboardCharts=window.__bmsDashboardCharts||{};Object.values(window.__bmsDashboardCharts).forEach(ch=>{try{ch.destroy()}catch(_){}});window.__bmsDashboardCharts={};
+      const colors=['#2563eb','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#64748b'];
+      const base={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{usePointStyle:true,boxWidth:8,padding:14,color:'#64748b',font:{size:11}}}}};
+      if(window.Chart){
+        window.__bmsDashboardCharts.stock=new Chart($('#dashboardStockChart'),{type:'bar',data:{labels:['Stock In','Stock Out','Balance'],datasets:[{data:[Number(d.stock_overview?.stock_in||0),Number(d.stock_overview?.stock_out||0),Number(d.stock_overview?.balance||0)],backgroundColor:['#10b981','#f87171','#3b82f6'],borderRadius:8,borderSkipped:false,maxBarThickness:56}]},options:{...base,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:'#64748b'}},y:{beginAtZero:true,grid:{color:'#eef2f7'},ticks:{precision:0,color:'#64748b'}}}}});
+        const cats=Array.isArray(d.by_category)?d.by_category:[];
+        window.__bmsDashboardCharts.category=new Chart($('#chartCategory'),{type:'doughnut',data:{labels:cats.map(c=>c.category),datasets:[{data:cats.map(c=>Number(c.total_stock||0)),backgroundColor:cats.map((_,i)=>colors[i%colors.length]),borderWidth:3,borderColor:'#fff',hoverOffset:5}]},options:{...base,cutout:'62%',plugins:{legend:{position:'bottom',labels:{usePointStyle:true,boxWidth:8,padding:11,color:'#64748b',font:{size:10}}}}}});
+        const grouped={};[...(d.recent_transactions||[])].reverse().forEach(t=>{const day=String(t.transaction_date||'').slice(0,10)||'Unknown';grouped[day]=(grouped[day]||0)+Number(t.quantity||0)*(String(t.transaction_type||'').toUpperCase()==='STOCK_OUT'?-1:1)});const movement=Object.entries(grouped).slice(-7);
+        window.__bmsDashboardCharts.movement=new Chart($('#dashboardMovementChart'),{type:'line',data:{labels:movement.map(x=>x[0]),datasets:[{label:'Net movement',data:movement.map(x=>x[1]),borderColor:'#0d9488',backgroundColor:'rgba(13,148,136,.12)',fill:true,tension:.35,pointRadius:3,borderWidth:2.5}]},options:{...base,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,color:'#64748b',maxTicksLimit:5}},y:{grid:{color:'#eef2f7'},ticks:{precision:0,color:'#64748b'}}}}});
+        const healthy=Math.max(0,Number(d.total_items||0)-Number(d.low_stock_count||0)-Number(d.out_of_stock_count||0));
+        window.__bmsDashboardCharts.health=new Chart($('#dashboardHealthChart'),{type:'doughnut',data:{labels:['Healthy','Low stock','Out of stock'],datasets:[{data:[healthy,Number(d.low_stock_count||0),Number(d.out_of_stock_count||0)],backgroundColor:['#10b981','#f59e0b','#ef4444'],borderWidth:3,borderColor:'#fff'}]},options:{...base,cutout:'68%',plugins:{legend:{display:false}}}});
+      } else {barChart($('#dashboardStockChart'),[{label:'Stock In',value:Number(d.stock_overview?.stock_in||0),color:'#10b981'},{label:'Stock Out',value:Number(d.stock_overview?.stock_out||0),color:'#ef4444'},{label:'Balance',value:Number(d.stock_overview?.balance||0),color:'#2563eb'}]);hBarChart($('#chartCategory'),(d.by_category||[]).map(c=>({label:c.category,value:c.total_stock})));}
 
       const exportRows = {
         overview: [
