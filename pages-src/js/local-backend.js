@@ -748,7 +748,7 @@
         }
         if(method==='PUT'){
           const patch={};
-          ['item_name','description','category','subcategory','brand','model','part_number','unit','location','minimum_stock','maximum_stock','opening_stock','supplier','remarks'].forEach(k=>{if(body[k]!==undefined)patch[k]=body[k];});
+          ['item_code','item_name','description','category','subcategory','brand','model','part_number','unit','location','minimum_stock','maximum_stock','opening_stock','supplier','remarks'].forEach(k=>{if(body[k]!==undefined)patch[k]=body[k];});
           ['minimum_stock','maximum_stock','opening_stock'].forEach(k=>{if(patch[k]!==undefined)patch[k]=Number(patch[k]);});
           patch.updated_at=new Date().toISOString();
           const r=await sb.from('items').update(patch).eq('id',id).select('*').single();
