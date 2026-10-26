@@ -660,9 +660,57 @@
       }
 
       if(method==='GET' && url.pathname==='/api/categories'){
-        const m=new Map();
-        items.forEach(i=>{if(!m.has(i.category))m.set(i.category,{id:i.category,name:i.category,description:'',item_count:0});m.get(i.category).item_count++;});
-        return json(200,[...m.values()].sort((a,b)=>a.name.localeCompare(b.name)));
+        const cr=await sb.from('categories').select('*').order('name');
+        if(cr.error) throw cr.error;
+        const counts=new Map();
+        items.forEach(i=>counts.set(i.category,(counts.get(i.category)||0)+1));
+        return json(200,(cr.data||[]).map(c=>({...c,item_count:counts.get(c.name)||0})));
+      }
+      if(method==='POST' && url.pathname==='/api/categories'){
+        const name=s(body.name), description=s(body.description);
+        if(!name) return json(400,{error:'Category Name is required.'});
+        const r=await sb.from('categories').insert({name,description}).select('*').single();
+        if(r.error) throw r.error;
+        return json(200,{...r.data,item_count:0});
+      }
+      const categoryMatch=url.pathname.match(/^\\/api\\/categories\\/(\\d+)$/);
+      if(categoryMatch){
+        const categoryId=Number(categoryMatch[1]);
+        if(method==='PUT'){
+          const old=await sb.from('categories').select('*').eq('id',categoryId).single();
+          if(old.error) throw old.error;
+          const name=s(body.name), description=s(body.description);
+          if(!name) return json(400,{error:'Category Name is required.'});
+          if(name!==old.data.name){
+            const rename=await sb.from('items').update({category:name,updated_at:new Date().toISOString()}).eq('category',old.data.name);
+            if(rename.error) throw rename.error;
+          }
+          const r=await sb.from('categories').update({name,description}).eq('id',categoryId).select('*').single();
+          if(r.error) throw r.error;
+          return json(200,{...r.data,item_count:items.filter(i=>i.category===old.data.name).length});
+        }
+        if(method==='DELETE'){
+          const cat=await sb.from('categories').select('*').eq('id',categoryId).single();
+          if(cat.error) throw cat.error;
+          const count=items.filter(i=>i.category===cat.data.name).length;
+          const force=url.searchParams.get('force')==='true'||url.searchParams.get('force')==='1';
+          if(count>0&&!force) return json(409,{error:'Category is in use. Reassign items first or confirm moving them to Others.'});
+          let reassigned=0;
+          if(count>0){
+            let other=await sb.from('categories').select('*').eq('name','Others').maybeSingle();
+            if(other.error) throw other.error;
+            if(!other.data){
+              other=await sb.from('categories').insert({name:'Others',description:'Miscellaneous items'}).select('*').single();
+              if(other.error) throw other.error;
+            }
+            const move=await sb.from('items').update({category:'Others',updated_at:new Date().toISOString()}).eq('category',cat.data.name);
+            if(move.error) throw move.error;
+            reassigned=count;
+          }
+          const removed=await sb.from('categories').delete().eq('id',categoryId);
+          if(removed.error) throw removed.error;
+          return json(200,{deleted:true,category:cat.data.name,reassigned});
+        }
       }
 
       if(method==='GET' && url.pathname==='/api/meta'){
