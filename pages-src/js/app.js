@@ -292,12 +292,21 @@ function openItemModal(id) {
     'Electrical & Control Accessories': 'ELEC',
     'Sensors & Lighting': 'SENS',
     'Tools & Equipment': 'TOOL'
-  })[category] || '';
+  })[category] || String(category || '').replace(/[^a-z]/gi, '').slice(0, 4).toUpperCase();
   function suggestItemCode(category) {
     const prefix = codePrefix(category);
     if (!prefix) return '';
-    const nums = state.items.map(i => {
-      const match = String(i.item_code || '').match(new RegExp('^' + prefix + '-(\\d{4})  const deleteBtn = $('#btnDeleteItem');
+    const nums = state.items.map((i) => {
+      const match = String(i.item_code || '').match(new RegExp('^' + prefix + '-(\\d{4})$', 'i'));
+      return match ? Number(match[1]) : 0;
+    });
+    return prefix + '-' + String(Math.max(0, ...nums) + 1).padStart(4, '0');
+  }
+  if (!id) {
+    categoryInput.addEventListener('change', () => { codeInput.value = suggestItemCode(categoryInput.value); });
+    if (categoryInput.value) codeInput.value = suggestItemCode(categoryInput.value);
+  }
+  const deleteBtn = $('#btnDeleteItem');
   if (deleteBtn) deleteBtn.onclick = async () => {
     const label = `${item.item_code || 'this item'} — ${item.item_name || ''}`;
     if (!window.confirm(`Delete ${label}? This action cannot be undone. Items with transaction history cannot be deleted.`)) return;
@@ -990,7 +999,7 @@ async function renderTransactions() {
             </tr>`
           )
           .join('')
-      : emptyRow(12);
+      : emptyRow(11);
     $('#txnCount').textContent = `${txns.length} transaction / audit record(s) — maximum 1,000 per query`;
   }
 
