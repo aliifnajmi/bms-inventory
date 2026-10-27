@@ -484,33 +484,12 @@ async function renderTransactionDetail(match) {
   };
 }
 
-/* ---------- overtime module integration shell ---------- */
+/* ---------- native overtime module ---------- */
 function renderOvertimeModule() {
-  return {
-    html: `
-      <section class="card">
-        <div class="card-head">
-          <div>
-            <h2>Overtime (OT) Management</h2>
-            <p>Worker records, OT submissions, verification and reporting.</p>
-          </div>
-          <a class="btn" href="https://github.com/aliifnajmi/ot-system" target="_blank" rel="noopener noreferrer">OT source repository ↗</a>
-        </div>
-        <div class="card-body" style="padding:0">
-          <div style="padding:14px 18px;background:var(--surface-2, #f8fafc);border-bottom:1px solid var(--border);font-size:13px;line-height:1.6">
-            <strong>Integration stage: embedded OT application.</strong>
-            <span> The existing OT app is shown below to preserve its current workflows while authentication and data migration are audited. OT login may be separate from Inventory at this stage.</span>
-          </div>
-          <iframe
-            title="BMS OT Management"
-            src="https://aliifnajmi.github.io/ot-system/"
-            loading="lazy"
-            style="display:block;width:100%;height:calc(100vh - 245px);min-height:680px;border:0;background:#f5f7fa"
-            referrerpolicy="strict-origin-when-cross-origin"
-          ></iframe>
-        </div>
-      </section>`
-  };
+  if (!window.BMSOtModule || typeof window.BMSOtModule.render !== 'function') {
+    return { html: '<div class="card"><div class="card-body"><h2>OT module unavailable</h2><p>Refresh the page. If this continues, check that docs/js/ot-module.js is deployed.</p></div></div>' };
+  }
+  return window.BMSOtModule.render();
 }
 
 /* ---------- router ---------- */
