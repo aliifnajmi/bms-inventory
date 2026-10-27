@@ -450,6 +450,8 @@ const NAV = [
   { route: '/settings', icon: 'sliders', label: 'Settings' },
   { section: 'Daily Operations' },
   { route: '/daily-operations/fcu-extension', icon: 'check', label: 'Tenant FCU Extension' },
+  { section: 'Overtime Management' },
+  { route: '/overtime', icon: 'chart', label: 'OT Management' },
 ];
 
 function buildNav() {
@@ -482,6 +484,14 @@ async function renderTransactionDetail(match) {
   };
 }
 
+/* ---------- native overtime module ---------- */
+function renderOvertimeModule() {
+  if (!window.BMSOtModule || typeof window.BMSOtModule.render !== 'function') {
+    return { html: '<div class="card"><div class="card-body"><h2>OT module unavailable</h2><p>Refresh the page. If this continues, check that docs/js/ot-module.js is deployed.</p></div></div>' };
+  }
+  return window.BMSOtModule.render();
+}
+
 /* ---------- router ---------- */
 const routes = [
   { rx: /^\/$/, title: 'Dashboard', render: renderDashboard },
@@ -495,6 +505,7 @@ const routes = [
   { rx: /^\/reports$/, title: 'Reports', render: renderReports },
   { rx: /^\/settings$/, title: 'Settings', render: renderSettings },
   { rx: /^\/daily-operations\/fcu-extension$/, title: 'Tenant FCU Extension', render: () => window.BMSFcuExtension.render() },
+  { rx: /^\/overtime$/, title: 'Overtime Management', render: renderOvertimeModule },
   { rx: /^\/items\/(\d+)$/, title: 'Item Details', render: renderItemDetail },
 ];
 
