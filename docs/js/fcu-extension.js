@@ -28,7 +28,7 @@
     const rows = [], errors = [], seen = {};
     String(raw || '').split(/\r?\n/).forEach(function (line, i) {
       const p = line.trim().split(/\s+/); if (!line.trim()) return;
-      if (p.length < 3 || minutes(p[0]) === null || minutes(p[1]) === null || !/^L\d+/i.test(p[2])) { errors.push('Baris '+(i+1)+': '+line.trim()); return; }
+      if (p.length < 3 || minutes(p[0]) === null || minutes(p[1]) === null || !/^L\d+/i.test(p[2])) { errors.push('Line '+(i+1)+': '+line.trim()); return; }
       const code = p[2].toUpperCase();
       if (seen[code]) { errors.push('Kod pendua: '+code); return; } seen[code] = true;
       const b = code.split('-'), m = /^L(\d+)/i.exec(b[0]);
@@ -36,7 +36,7 @@
       if(zone===null||zone<1||zone>8){errors.push('Line '+(i+1)+': FCU code must end with a zone number from 01 to 08: '+code);return;}
       rows.push({id:code,start:p[0],end:p[1],code:code,level:b[0].toUpperCase(),levelNum:m?Number(m[1]):0,zone:zone,unit:b.slice(1,-1).join('-')||'—'});
     });
-    rows.sort(function(a,b){return a.levelNum-b.levelNum || a.zone.localeCompare(b.zone,undefined,{numeric:true}) || a.unit.localeCompare(b.unit,undefined,{numeric:true});});
+    rows.sort(function(a,b){return a.levelNum-b.levelNum || a.zone-b.zone || a.unit.localeCompare(b.unit,undefined,{numeric:true});});
     return {rows:rows,errors:errors};
   };
   const notify = function (msg) { const n=document.getElementById('fcuNotice'); if(n){n.textContent=msg;n.hidden=false;setTimeout(function(){n.hidden=true;},3000);} };
@@ -44,8 +44,8 @@
   const load = function () { try { checks=JSON.parse(localStorage.getItem(storeKey())||'{}')||{}; standbyChecks=JSON.parse(localStorage.getItem(standbyKey())||'{}')||{}; } catch(e) { checks={}; standbyChecks={}; } };
   const saveStandby = function () { try { localStorage.setItem(standbyKey(),JSON.stringify(standbyChecks)); } catch(e) {} };
   const report = function () {
-    const out=['LAPORAN SEMAKAN TENANT FCU EXTENSION — EXCHANGE 106','Tarikh: '+new Date().toLocaleDateString('en-GB'),'Masa: '+new Date().toLocaleTimeString('en-GB'),'Jumlah: '+records.length+' | Verified: '+records.filter(function(r){return checks[r.id];}).length,'Nota: Verified ialah rekod semakan operator, bukan status live BMS.',''];
-    let last=''; records.forEach(function(r){if(last!==r.level){last=r.level;out.push('['+last+']');}out.push((checks[r.id]?'[VERIFIED]':'[PENDING]')+' '+r.start+' - '+r.end+' | '+r.zone+' | '+r.code);});
+    const out=['TENANT FCU EXTENSION CHECK REPORT — EXCHANGE 106','Tarikh: '+new Date().toLocaleDateString('en-GB'),'Masa: '+new Date().toLocaleTimeString('en-GB'),'Jumlah: '+records.length+' | Verified: '+records.filter(function(r){return checks[r.id];}).length,'Nota: Verified ialah rekod semakan operator, bukan status live BMS.',''];
+    let last=''; records.forEach(function(r){if(last!==r.level){last=r.level;out.push('['+last+']');}out.push((checks[r.id]?'[VERIFIED]':'[PENDING]')+' '+r.start+' - '+r.end+' | Zone '+r.zone+' | '+r.code+(standbyChecks[r.id]?' | STANDBY':''));});
     return out.join('\n');
   };
   const filtered = function () {
@@ -76,7 +76,7 @@
       }
       matrix+='</div></section>';});
     document.getElementById('fcuMatrix').innerHTML=matrix||'<div class="fcu-empty">No FCUs to display.</div>';
-    document.getElementById('fcuTableBody').innerHTML=data.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(r.level)+'</td><td>'+esc(r.zone)+'</td><td>'+esc(r.unit)+'</td><td><b>'+esc(r.code)+'</b></td><td>'+esc(r.start)+' – '+esc(r.end)+'<br>'+status(r)+'</td><td><input type="checkbox" data-standby="'+esc(r.id)+'" '+(standbyChecks[r.id]?'checked':'')+' aria-label="Standby"></td><td><button class="fcu-btn '+(checks[r.id]?'blue':'primary')+'" data-verify="'+esc(r.id)+'">'+(checks[r.id]?'Verified ✓':'Mark Verified')+'</button></td></tr>';}).join('')||'<tr><td colspan="8" class="fcu-empty">No matching FCUs.</td></tr>';
+    document.getElementById('fcuTableBody').innerHTML=data.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(r.level)+'</td><td>'+esc(r.zone)+'</td><td><b>'+esc(r.code)+'</b></td><td>'+esc(r.start)+' – '+esc(r.end)+'<br>'+status(r)+'</td><td><input type="checkbox" data-standby="'+esc(r.id)+'" '+(standbyChecks[r.id]?'checked':'')+' aria-label="Standby"></td><td><button class="fcu-btn '+(checks[r.id]?'blue':'primary')+'" data-verify="'+esc(r.id)+'">'+(checks[r.id]?'Verified ✓':'Mark Verified')+'</button></td></tr>';}).join('')||'<tr><td colspan="7" class="fcu-empty">No matching FCUs.</td></tr>';
     document.getElementById('fcuMatrixWrap').hidden=view!=='matrix'; document.getElementById('fcuTableWrap').hidden=view!=='table';
     document.querySelectorAll('[data-view]').forEach(function(b){b.classList.toggle('selected',b.dataset.view===view);});
   };
@@ -96,7 +96,7 @@
       '<section class="fcu-card"><div class="fcu-card-head"><div><h2>1. Import Schedule</h2><p>Paste start time, stop time and FCU code from iFACILITY.</p></div></div><div class="fcu-body"><textarea id="fcuRaw" class="fcu-raw" spellcheck="false" placeholder="18:00    20:00    L47-2A-05"></textarea><p class="fcu-help">Format: START TIME · STOP TIME · FCU CODE. Tabs or spaces are accepted; invalid rows and duplicate codes are flagged.</p><div class="fcu-actions"><button class="fcu-btn primary" id="fcuProcess">↕ Process &amp; Sort</button><button class="fcu-btn" id="fcuSample">Load Sample</button><button class="fcu-btn danger" id="fcuClear">Clear</button></div><div class="fcu-errors" id="fcuErrors" hidden></div></div></section>',
       '<section class="fcu-card"><div class="fcu-card-head"><div><h2>2. Daily FCU Checklist</h2><p>Each level has eight fixed zone columns. FCU code suffix 01–08 determines its zone. Green pulsing indicates an active schedule window.</p></div><div class="fcu-actions" style="margin:0"><button class="fcu-btn" id="fcuCopy">Copy Report</button><button class="fcu-btn" id="fcuExport">Export CSV</button></div></div>',
       '<div class="fcu-toolbar"><input id="fcuSearch" class="fcu-search" type="search" placeholder="Search level, zone, FCU code or time…"><select id="fcuStatus" class="fcu-select"><option value="all">All statuses</option><option value="active">In schedule window</option><option value="pending">Pending</option><option value="verified">Verified</option></select><div class="fcu-switch"><button data-view="matrix" class="selected">Matrix</button><button data-view="table">Table</button></div><span id="fcuResultCount" class="fcu-result">0 shown</span></div>',
-      '<div class="fcu-body" id="fcuMatrixWrap"><div id="fcuMatrix"></div></div><div class="fcu-table-wrap" id="fcuTableWrap" hidden><table class="fcu-table"><thead><tr><th>No.</th><th>Level</th><th>Zone</th><th>FCU No.</th><th>FCU Code</th><th>Start–Stop / Status</th><th>Standby</th><th>Verification</th></tr></thead><tbody id="fcuTableBody"></tbody></table></div>',
+      '<div class="fcu-body" id="fcuMatrixWrap"><div id="fcuMatrix"></div></div><div class="fcu-table-wrap" id="fcuTableWrap" hidden><table class="fcu-table"><thead><tr><th>No.</th><th>Level</th><th>Zone</th><th>FCU Code</th><th>Start–Stop / Status</th><th>Standby</th><th>Verification</th></tr></thead><tbody id="fcuTableBody"></tbody></table></div>',
       '<div class="fcu-body" style="border-top:1px solid var(--border)"><div class="fcu-actions"><button class="fcu-btn blue" id="fcuMarkAll">Mark All Verified</button><button class="fcu-btn danger" id="fcuReset">Reset Today’s Checks</button></div><p class="fcu-help">Mark all only after every FCU has been checked on the BMS.</p></div></section></div>'
     ].join('');
     return {html:html,bind:bind};
@@ -115,7 +115,7 @@
     document.getElementById('fcuMatrix').addEventListener('click',zoneAction);
     document.getElementById('fcuMatrix').addEventListener('change',zoneVerify);
     document.getElementById('fcuMatrix').addEventListener('change',toggle);document.getElementById('fcuTableBody').addEventListener('change',toggle);document.getElementById('fcuMatrix').addEventListener('click',verify);document.getElementById('fcuTableBody').addEventListener('click',verify);
-    document.getElementById('fcuCopy').onclick=async function(){if(!records.length)return notify('No schedule data to copy.');try{await navigator.clipboard.writeText(report());notify('Report copied.');}catch(e){const t=document.createElement('textarea');t.value=report();document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();notify('Laporan disalin.');}};
+    document.getElementById('fcuCopy').onclick=async function(){if(!records.length)return notify('No schedule data to copy.');try{await navigator.clipboard.writeText(report());notify('Report copied.');}catch(e){const t=document.createElement('textarea');t.value=report();document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();notify('Report copied.');}};
     document.getElementById('fcuExport').onclick=function(){if(!records.length)return notify('No schedule data to export.');const rows=[['Level','Zone','FCU Code','Start','Stop','Standby','Verification']].concat(records.map(function(r){return [r.level,r.zone,r.code,r.start,r.end,standbyChecks[r.id]?'YES':'NO',checks[r.id]?'VERIFIED':'PENDING'];}));const csv=rows.map(function(row){return row.map(function(v){return '"'+String(v).replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}));a.download='FCU-Extension-Check-'+dateKey()+'.csv';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1000);};
     document.getElementById('fcuReset').onclick=function(){if(!window.confirm('Reset semua tanda semakan hari ini?'))return;checks={};standbyChecks={};save();saveStandby();draw();notify('Today’s checks reset.');};
     document.getElementById('fcuMarkAll').onclick=function(){if(!records.length)return notify('No schedule records.');if(!window.confirm('Mark all FCUs as verified? Confirm every FCU has been checked on the BMS.'))return;records.forEach(function(r){checks[r.id]=true;});save();draw();notify('Semua rekod ditanda Verified.');};
