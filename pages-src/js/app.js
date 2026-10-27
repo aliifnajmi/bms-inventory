@@ -448,6 +448,8 @@ const NAV = [
   { route: '/categories', icon: 'tag', label: 'Categories' },
   { route: '/reports', icon: 'chart', label: 'Reports' },
   { route: '/settings', icon: 'sliders', label: 'Settings' },
+  { section: 'Daily Operations' },
+  { route: '/daily-operations/fcu-extension', icon: 'check', label: 'Tenant FCU Extension' },
 ];
 
 function buildNav() {
@@ -492,6 +494,7 @@ const routes = [
   { rx: /^\/categories$/, title: 'Categories', render: renderCategories },
   { rx: /^\/reports$/, title: 'Reports', render: renderReports },
   { rx: /^\/settings$/, title: 'Settings', render: renderSettings },
+  { rx: /^\/daily-operations\/fcu-extension$/, title: 'Tenant FCU Extension', render: () => window.BMSFcuExtension.render() },
   { rx: /^\/items\/(\d+)$/, title: 'Item Details', render: renderItemDetail },
 ];
 
