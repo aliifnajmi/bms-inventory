@@ -84,9 +84,6 @@ function hi(text,q){
   const re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','ig');
   return t.replace(re,'<mark>$1</mark>');
 }
-// construction level number -> marketing label (for the zone tab helper)
-const cmap={};D.floors.forEach(f=>{const m=f[0].match(/^Level (\w+)$/);if(m)cmap[m[1]]=f[1];});
-
 /* ---- Floor table ---- */
 const fb=document.getElementById('fb');
 function renderFloors(){
@@ -112,7 +109,6 @@ function render(){
   note.textContent='Sumber: BMS SCHEDULES & RESOURCES. Sheet1 tidak digunakan. Kolum Location menggunakan Marketing Floor.';
 }
 document.getElementById('q').addEventListener('input',render);
-renderFloors();render();
 renderFloors();render();
 </script>
 </body>
