@@ -99,12 +99,13 @@ function emptyRow(colspan, msg = 'No records found.') {
 }
 
 function downloadCsv(filename, headers, rows) {
-  const escCsv = (v) => {
-    v = v === null || v === undefined ? '' : String(v);
-    return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+  const escCsv = (value) => {
+    let v = value === null || value === undefined ? '' : String(value);
+    if (typeof value === 'string' && /^[=+@\t\r]/.test(v)) v = "'" + v;
+    return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
   };
-  const csv = [headers.map(escCsv).join(','), ...rows.map((r) => r.map(escCsv).join(','))].join('\r\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }); // BOM for Excel
+  const csv = [['EXCHANGE 106 | BMS SUPERAPPS'], ['Generated', new Date().toLocaleString()], [], headers, ...rows].map((r) => r.map(escCsv).join(',')).join('\r\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;
@@ -847,9 +848,9 @@ async function renderStockOut() {
       <div class="card-body">
         <form id="stockOutForm">
           <div class="form-grid">
-            <div class="field"><label class="req">Date</label><input type="date" id="so_date" value="${todayStr()}"></div>
+            <div class="field"><label class="req">Date</label><input type="date" id="so_date" value="${todayStr()}" required></div>
             ${itemSelectHtml('so_item')}
-            <div class="field"><label class="req">Quantity</label><input type="number" id="so_qty" min="1" step="1" placeholder="e.g. 2"></div>
+            <div class="field"><label class="req">Quantity</label><input type="number" id="so_qty" min="1" step="1" placeholder="e.g. 2" required></div>
             <div class="field"><label>Unit</label><input id="so_unit" readonly placeholder="Auto from item"></div>
             <div class="field"><label>Issued To</label><input id="so_to" placeholder="e.g. BMS Team - Level 35"></div>
             <div class="field"><label>Work Order / Job Ref</label><input id="so_wo" maxlength="80" placeholder="e.g. WO-2026-015 or PM-2026-015"><small class="hint">Enter the official maintenance job reference if available. The system creates a separate transaction ID automatically.</small></div>

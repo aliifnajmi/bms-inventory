@@ -1,233 +1,167 @@
-# BMS IMS — BMS Inventory Management System
+# BMS SuperApps — Building Management System Operations Platform
 
-**Building Management System Inventory & Stock Control**
+**One connected workspace for BMS technicians, store operations, and building maintenance workflows at Exchange 106.**
 
-BMS IMS is a lightweight inventory and spare-parts management system for BMS / Facility Management operations.
+BMS SuperApps is evolving from a simple inventory tracker into a modular digital workspace for Building Management System (BMS) and Facilities Management (FM) operations. The goal is straightforward: reduce manual work, keep operational records organised, and make useful information easier to access from a PC or mobile phone.
 
-## 1. Current Architecture
+> **Project status:** This repository is actively evolving. Inventory is the foundation; FCU Schedule Assistant, OT Management, and further modules are being developed and integrated in stages. Features described as planned or in progress should not be treated as production-ready until released and tested.
+
+## The Story Behind the Project
+
+### The problem
+
+BMS technicians and store operations handle many small but important tasks every day. When information is spread across spreadsheets, paper forms, browser storage, or separate tools, it can become difficult to:
+
+- Know which spare parts are available and where they are stored.
+- Keep stock records consistent when staff use different devices.
+- Find work references and trace why materials were issued.
+- Manage operational schedules and overtime records without repetitive manual entry.
+- Review reports quickly and hand over accurate information between shifts.
+- Grow the system without creating a separate disconnected app for every task.
+
+### The approach
+
+Instead of building one large system all at once, BMS SuperApps is being developed as a set of practical modules that share a common direction: a responsive interface, structured data, and a cloud-backed foundation using Supabase.
+
+The project grows from real operational needs. Each module addresses a specific workflow, while the long-term aim is to connect those workflows into one BMS operations platform.
+
+## How the Project Has Evolved
+
+### 1. BMS Inventory — the foundation
+
+The project began with inventory and spare-parts tracking for day-to-day BMS store operations.
+
+**The goal:** make it easier to record what comes in, what goes out, and what remains in stock.
+
+Core inventory workflows include:
+
+- Inventory item records and search.
+- Stock In, Stock Out, and stock adjustments.
+- Transaction history and stock-balance calculations.
+- Low-stock visibility and dashboard summaries.
+- Work-order/reference details to help trace material issues.
+- Reports and data exports for operational review.
+
+The early browser-based version relied on local storage, which meant data could be different between devices. The project moved toward **Supabase as a shared cloud database**, so supported devices can work with the same central data source.
+
+### 2. FCU Schedule Assistant — supporting recurring operations
+
+The next direction is to make recurring FCU-related scheduling and operational information easier to organise and access.
+
+**The goal:** reduce repetitive manual handling and make schedule information clearer for technicians.
+
+FCU Schedule Assistant is part of the wider SuperApps journey. Its integration and release status may vary by branch, so check the live application and current project updates before relying on a particular feature.
+
+### 3. OT Management — improving overtime administration
+
+Overtime (OT) management is another operational workflow being brought into the wider platform.
+
+**The goal:** organise overtime submissions and records, make them easier to review, and reduce scattered manual tracking.
+
+The intended workflow includes OT records, worker information, reporting, verification, and auditability. The OT module is being connected to Supabase as part of the integration work. Until the relevant changes are reviewed, merged, and tested, treat this integration as work in progress rather than a confirmed production release.
+
+### 4. BMS SuperApps — connecting the workflows
+
+Inventory, FCU scheduling, OT Management, and future tools are being developed toward a single modular experience.
+
+The long-term direction is to give technicians and supervisors one place to access the tools they need, while keeping each module focused on its own task.
+
+## Current Technical Direction
 
 ```text
-PC / Laptop ───────┐
-                   │
-Mobile Phone ──────┤
-                   ↓
-              GitHub Pages
-            Static Web Frontend
-                   ↓
-             Supabase JS Client
-                   ↓
-              Supabase Cloud
-              ┌─────┴─────┐
-              ↓           ↓
-           items     transactions
-              └─────┬─────┘
-                    ↓
-             Stock Calculation
+                 PC / Laptop / Mobile
+                          |
+                          v
+                Responsive Web Interface
+                          |
+             +------------+------------+
+             |            |            |
+             v            v            v
+         Inventory    FCU Schedule   OT Management
+             |            |            |
+             +------------+------------+
+                          |
+                          v
+                    Supabase Cloud
+               Shared data and services
+                          |
+                          v
+               Reports / Audit / Insights
+                 (evolving by module)
 ```
 
-| Component | Function |
+| Component | Purpose |
 |---|---|
-| GitHub Pages | Hosts the web application |
-| HTML / CSS / JavaScript | User interface and business flow |
-| Supabase | Shared cloud database |
-| items | Inventory master data |
-| transactions | Stock movement history |
-| local-backend.js | Keeps the existing /api/* interface and connects it to Supabase |
+| HTML, CSS, JavaScript | Web interface and module workflows |
+| GitHub | Source code, version history, and collaboration |
+| GitHub Pages | Hosts the static web application |
+| Supabase | Cloud database and data API for integrated modules |
+| Row Level Security (RLS) | Database access control; policies must be reviewed and hardened before wider production use |
 
-GitHub Pages provides static web hosting. Supabase can be accessed from browser JavaScript through its Data API; access should be protected with RLS and least-privilege policies. citeturn0search13turn0search0turn0search2
+The application uses a browser-based frontend, so **never put a Supabase secret or service-role key in client-side code**. A publishable key is not a replacement for correctly configured database permissions and RLS.
 
-## 2. Why Supabase
-
-The original GitHub Pages version stored data in browser localStorage. That meant the PC and phone had separate datasets.
-
-The current system stores inventory data in Supabase, so multiple devices can read the same stock database.
+## Inventory Workflow at a Glance
 
 ```text
-PC Stock In +10
-      ↓
-  Supabase
-      ↓
-Phone refresh
-      ↓
-Same Balance = 10
-```
-
-## 3. Current Inventory
-
-- Master inventory: **49 items**
-- Opening stock for the current master: **0**
-- Primary data source: **Supabase**
-
-## 4. Stock Formula
-
-```text
-Balance = Opening Stock + Stock In - Stock Out + Adjustment
-```
-
-Example:
-
-```text
-Opening   = 0
-Stock In  = +20
-Stock Out = -5
-Adjustment = 0
-Balance   = 15
-```
-
-Stock Out is blocked when requested quantity is greater than the available balance.
-
-## 5. How to Use
-
-### Dashboard
-Use Dashboard for total items, stock quantity, low/out-of-stock status, today's movements, recent transactions and quick actions.
-
-### Inventory
-Search and filter items by code, name, category, location, brand or stock status. Open an item to see its details and movement.
-
-### Stock In
-Use when material is received. Select item, enter quantity and reference/supplier where available, then submit.
-
-### Stock Out
-Use when material is issued for BMS/M&E work. Record item, quantity, issued-to, work order, area and reason where applicable.
-
-### Adjustment
-Use only when physical count differs from system balance. Record the reason; the adjustment becomes part of the transaction history.
-
-### Transactions
-Use this module to review Stock In, Stock Out and Adjustment history.
-
-### Reports / CSV
-Use reports for inventory, low stock and stock movement. CSV can be opened with Microsoft Excel.
-
-## 6. Recommended Daily Workflow
-
-```text
-START SHIFT
-  ↓
 Check Dashboard
-  ↓
-Check Low / Out of Stock
-  ↓
-Receive material → STOCK IN
-  ↓
-Issue material → STOCK OUT
-  ↓
-Verify unusual balance
-  ↓
-Physical check when required
-  ↓
-Adjustment only when necessary
-  ↓
-Review Transactions
-  ↓
-HANDOVER / END SHIFT
+      |
+      v
+Review Low / Out-of-Stock Items
+      |
+      +----> Receive Parts ------> Stock In
+      |
+      +----> Issue Parts --------> Stock Out
+                                      |
+                                      v
+                           Record Work Reference
+                                      |
+                                      v
+                            Review Transactions
+                                      |
+                                      v
+                            Report / Handover
 ```
 
-## 7. Mobile Operation
+The exact fields and available actions depend on the version currently deployed.
 
-The system is intended to be usable from a phone browser.
+## Roadmap — What Comes Next
 
-Recommended phone flow:
-1. Open the BMS IMS URL.
-2. Use the menu button for navigation.
-3. Use Dashboard for quick checks.
-4. Use Stock In / Stock Out for daily operations.
-5. Use Inventory search to find parts quickly.
-6. Prefer portrait mode for normal stock entry.
+The roadmap is a direction for development, not a promise that every item is already available.
 
-Mobile-first optimization is the next development priority.
+### Near-term priorities
+- Continue integrating Inventory, FCU Schedule Assistant, and OT Management.
+- Keep the interface responsive and practical on mobile and desktop.
+- Improve Work Order references, reports, and export consistency.
+- Test complete workflows before promoting changes to the live application.
+- Review Supabase access rules, authentication, roles, and audit requirements.
 
-## 8. Database
+### Future module ideas
+- **QR Asset & Digital Work Order:** scan an asset or item to open its details and related maintenance record.
+- **Preventive Maintenance Planner:** organise recurring maintenance schedules and track completion.
+- **Digital Shift Handover:** record outstanding work, abnormal conditions, and follow-up actions.
+- **BMS Alarm Intelligence Centre:** organise alarm information and help technicians investigate recurring issues.
+- **Inventory–Work Order Integration:** connect material usage to work references and maintenance history.
+- **AI Technician Assistant:** help technicians search approved procedures, interpret records, and prepare reports.
 
-### items
-Stores item code, item name, category, unit, location, minimum/maximum stock, opening stock, brand, model, part number, supplier and remarks.
+Future modules will be prioritised according to operational value, data quality, security, and feasibility.
 
-### transactions
-Stores transaction ID, item, type, quantity, reference, supplier, issued-to, work order, area, reason, user, remarks, transaction date and created time.
+## Development and Release Notes
 
-## 9. Security
+This project is developed in stages using branches and pull requests so that changes can be reviewed before they are merged.
 
-The frontend uses a Supabase **publishable key**. Publishable keys are designed for client-side use, but database access must be protected with RLS and appropriate grants. Secret/service-role keys must never be exposed in browser code. citeturn0search2turn0search4
+- Work-in-progress branches may contain features that are not available on the live site.
+- A pull request is not the same as a production release.
+- Database changes and security policies must be checked alongside frontend changes.
+- Real-world operational use should follow successful end-to-end testing and the appropriate approval process.
 
-Current RLS configuration is intentionally broad for internal prototype/testing. Before wider or public deployment, implement:
-- Supabase Auth login
-- Technician / Store Operator / Supervisor roles
-- Restricted item master editing
-- Supervisor permission for adjustments
-- Stronger RLS policies
-- Better audit trail
+## Useful Links
 
-## 10. Current Limitations
+- **Live Inventory application:** https://aliifnajmi.github.io/bms-inventory/
+- **GitHub repository:** https://github.com/aliifnajmi/bms-inventory
+- **Supabase:** https://supabase.com/
 
-- No login/role management yet.
-- RLS requires hardening for production.
-- Inventory valuation/cost tracking is not implemented.
-- Native XLSX export is not implemented.
-- WhatsApp/email notifications are not implemented.
-- Transaction ID generation should be made concurrency-safe for larger deployments.
+## The Vision
 
-## 11. Roadmap
+**Build practical tools around the real work of BMS technicians — then connect those tools into one reliable SuperApps platform.**
 
-### Phase 1 — Mobile Operation
-- Mobile-first layout
-- Larger touch controls
-- Compact dashboard
-- Faster Stock In / Stock Out
-- Mobile-friendly tables
-- Mobile-friendly modal forms
-
-### Phase 2 — Security
-- Login
-- User roles
-- RLS hardening
-- Supervisor approval for adjustments
-
-### Phase 3 — BMS Store Intelligence
-- Low-stock alert
-- Reorder suggestion
-- Minimum/maximum stock recommendation
-- Monthly stock report
-- Stock movement analytics
-
-### Phase 4 — Smart BMS Integration
-- QR/barcode scanning
-- Item QR labels
-- AI inventory assistant
-- WhatsApp notification
-- BMS work-order reference
-- Predictive spare-parts demand
-
-## 12. Project Structure
-
-```text
-bms-inventory/
-├── server.js
-├── db.js
-├── inventory.js
-├── seed.js
-├── public/
-│   ├── index.html
-│   ├── css/style.css
-│   └── js/
-│       ├── app.js
-│       └── charts.js
-├── pages-src/
-│   ├── index.html
-│   └── js/local-backend.js
-├── docs/
-│   └── GitHub Pages deployed files
-├── supabase/
-│   └── schema.sql
-└── README.md
-```
-
-## 13. Official Links
-
-- Live system: https://aliifnajmi.github.io/bms-inventory/
-- GitHub repository: https://github.com/aliifnajmi/bms-inventory
-
-## 14. Version Status
-
-**BMS IMS v1.x — Supabase Cloud + GitHub Pages**
-
-**Next priority: Mobile-first optimization.**
+BMS SuperApps is a work in progress. The focus is not simply to add more features, but to make everyday operations easier to record, find, review, and improve.

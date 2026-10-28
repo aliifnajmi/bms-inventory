@@ -52,8 +52,8 @@
       var logoImage = new Image(); logoImage.crossOrigin = 'anonymous'; logoImage.src = 'https://cdn.brandfetch.io/idym1nRWUa/w/2048/h/2048/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1783323508223';
       try { await new Promise(function(resolve,reject){ logoImage.onload=resolve; logoImage.onerror=reject; }); doc.addImage(logoImage,'JPEG',margin,margin,24,11); } catch (_) {}
       doc.setFontSize(size === 'square' ? 10 : 15); doc.text('EXCHANGE 106 · BUILDING MANAGEMENT OPERATIONS',margin+27,margin+4); doc.setFontSize(size === 'square' ? 9 : 13); doc.text('WORK ORDER / TRANSACTION REPORT',margin+27,margin+10);
-      doc.setFontSize(8); doc.text('Work Order / Job Ref: '+String(t.work_order||'Not specified'),margin,margin+11); doc.text('System Transaction ID: '+String(t.transaction_id||''),margin,margin+15);
-      doc.text('Date: '+String(t.transaction_date||'—')+'  |  Generated: '+new Date().toLocaleDateString(),margin,margin+20);
+      doc.setFontSize(8); doc.text('Work Order / Job Ref: '+String(t.work_order||'Not specified'),margin,margin+16); doc.text('System Transaction ID: '+String(t.transaction_id||''),margin,margin+20);
+      doc.text('Date: '+String(t.transaction_date||'—')+'  |  Generated: '+new Date().toLocaleDateString(),margin,margin+25);
       var rows = [
         ['Work Order / Job Ref',t.work_order||'Not specified'],['System Transaction ID',t.transaction_id||'—'],['Transaction Date',t.transaction_date],['Transaction Type',t.transaction_type],
         ['Item Code',t.item_code],['Item Name',t.item_name],
@@ -64,11 +64,11 @@
         ['Remarks',t.remarks||'—'],['Recorded By',t.user_name||t.user||t.issued_by||t.received_by||'Not recorded'],
         ['Created At',t.created_at?new Date(t.created_at).toLocaleString():'Not available']
       ];
-      if (typeof doc.autoTable === 'function') doc.autoTable({startY:margin+21,margin:{left:margin,right:margin},tableWidth:usableWidth,head:[['Field','Work Order Details']],body:rows.map(function(r){return [String(r[0]),String(r[1]||'—')];}),styles:{fontSize:size==='square'?5.5:9,cellPadding:size==='square'?1.5:3,overflow:'linebreak'},headStyles:{fillColor:[28,55,90]},columnStyles:{0:{cellWidth:size==='square'?29:45},1:{cellWidth:'auto'}}});
-      else { var y=margin+25; rows.forEach(function(r){doc.setFontSize(7);doc.text(String(r[0])+': '+String(r[1]||'—').slice(0,70),margin,y); y+=5; if(y>doc.internal.pageSize.getHeight()-margin){doc.addPage();y=margin;}}); }
+      if (typeof doc.autoTable === 'function') doc.autoTable({startY:margin+31,margin:{left:margin,right:margin},tableWidth:usableWidth,head:[['Field','Work Order Details']],body:rows.map(function(r){return [String(r[0]),String(r[1]||'—')];}),styles:{fontSize:size==='square'?5.5:9,cellPadding:size==='square'?1.5:3,overflow:'linebreak'},headStyles:{fillColor:[28,55,90]},columnStyles:{0:{cellWidth:size==='square'?29:45},1:{cellWidth:'auto'}}});
+      else { var y=margin+35; rows.forEach(function(r){doc.setFontSize(7);doc.text(String(r[0])+': '+String(r[1]||'—').slice(0,70),margin,y); y+=5; if(y>doc.internal.pageSize.getHeight()-margin){doc.addPage();y=margin;}}); }
       var qrCanvas=document.querySelector('#txnQrCode canvas'); if(qrCanvas){try{doc.addImage(qrCanvas.toDataURL('image/png'),'PNG',pageWidth-margin-(size==='square'?20:25),margin+2,size==='square'?17:22,size==='square'?17:22);}catch(_){}}
       var signY=(doc.lastAutoTable&&doc.lastAutoTable.finalY?doc.lastAutoTable.finalY:margin+80)+18;if(signY>doc.internal.pageSize.getHeight()-28){doc.addPage();signY=22;}var signGap=usableWidth/3;[['Prepared By / Technician',0],['Checked By / Supervisor',1],['Approved By / Engineer',2]].forEach(function(sg){var x=margin+sg[1]*signGap;doc.setDrawColor(100,116,139);doc.line(x,signY,x+signGap-5,signY);doc.setFontSize(7);doc.text(sg[0],x,signY+5);});
-      doc.save('exchange106-work-order-'+String(t.work_order||t.transaction_id||'record')+'-'+size+'.pdf');
+      doc.save('exchange106-work-order-'+String(t.work_order||t.transaction_id||'record').replace(/[^a-z0-9_-]+/gi,'-')+'-'+size+'.pdf');
     };
     var sizeSelect = document.getElementById('txnReportSize');
     if (sizeSelect) sizeSelect.onchange = function() {
@@ -91,7 +91,7 @@
       var ws = XLSX.utils.aoa_to_sheet([['EXCHANGE 106 — WORK ORDER / TRANSACTION REPORT'],['Generated',new Date().toLocaleString()],[],...rows]);
       ws['!cols'] = [{wch:24},{wch:54}];
       XLSX.utils.book_append_sheet(wb,ws,'Work Order');
-      XLSX.writeFile(wb,'exchange106-work-order-'+String(t.work_order||t.transaction_id||'record')+'-report.xlsx');
+      XLSX.writeFile(wb,'exchange106-work-order-'+String(t.work_order||t.transaction_id||'record').replace(/[^a-z0-9_-]+/gi,'-')+'-report.xlsx');
     };
     document.getElementById('txnModalBackdrop').onclick = function(e) { if (e.target.id === 'txnModalBackdrop') close(); };
     var refBox = document.getElementById('txnRefPreview');
