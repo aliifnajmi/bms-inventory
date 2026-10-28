@@ -99,12 +99,13 @@ function emptyRow(colspan, msg = 'No records found.') {
 }
 
 function downloadCsv(filename, headers, rows) {
-  const escCsv = (v) => {
-    v = v === null || v === undefined ? '' : String(v);
-    return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+  const escCsv = (value) => {
+    let v = value === null || value === undefined ? '' : String(value);
+    if (typeof value === 'string' && /^[=+@\\t\\r]/.test(v)) v = "'" + v;
+    return /[",\\n\\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
   };
-  const csv = [headers.map(escCsv).join(','), ...rows.map((r) => r.map(escCsv).join(','))].join('\r\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }); // BOM for Excel
+  const csv = [headers.map(escCsv).join(','), ...rows.map((r) => r.map(escCsv).join(','))].join('\\r\\n');
+  const blob = new Blob(['\\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;
