@@ -77,7 +77,13 @@
   }
   function modal(title,body) { let root=$('#otModalRoot');if(!root){root=document.createElement('div');root.id='otModalRoot';document.body.appendChild(root);}root.innerHTML='<div class="ot-modal-backdrop"><section class="ot-modal"><header><h2>'+title+'</h2><button data-close-modal aria-label="Close">×</button></header>'+body+'</section></div>';root.querySelectorAll('[data-close-modal]').forEach(b=>b.onclick=closeModal);root.querySelector('.ot-modal-backdrop').onclick=e=>{if(e.target===e.currentTarget)closeModal();}; }
   function closeModal(){const m=$('#otModalRoot');if(m)m.remove();}
-  function exportCsv(rows) { const header=['Date','Worker','Employee ID','Department','OT Type','Start','End','Hours','Reason','Status','Remarks'];const data=[['EXCHANGE 106 | BMS SUPERAPPS'],['Overtime Management Report'],['Generated',new Date().toLocaleString()],[],header,...rows.map(r=>{const w=state.workers.find(x=>x.id===r.workerId)||{};return[r.date,w.name||'',w.employeeId||r.employeeId||'',w.department||'',r.type,r.start,r.end,r.hours,r.reason,r.status,r.remarks||''];})];const csv=data.map(row=>row.map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}));a.download='exchange106-ot-report-'+today()+'.csv';a.click();URL.revokeObjectURL(a.href); }
+  function exportCsv(rows) {
+    const header=['Date','Worker','Employee ID','Department','OT Type','Start','End','Hours','Reason','Status','Remarks'];
+    const data=[['EXCHANGE 106 | BMS SUPERAPPS'],['Overtime Management Report'],['Generated',new Date().toLocaleString()],[],header,...rows.map(r=>{const w=state.workers.find(x=>x.id===r.workerId)||{};return[r.date,w.name||'',w.employeeId||r.employeeId||'',w.department||'',r.type,r.start,r.end,r.hours,r.reason,r.status,r.remarks||''];})];
+    const q=(v)=>{let x=String(v==null?'':v);if(typeof v==='string'&&/^[=+@\t\r]/.test(x))x="'"+x;return /[",\n\r]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x;};
+    const csv=data.map(row=>row.map(q).join(',')).join('\r\n');
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));a.download='exchange106-ot-report-'+today()+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  }
   async function render() {
     const root=$('#content'); if(!root)return;
     try { const signedIn=await loadRemote(); if(!signedIn){root.innerHTML=shell(loginPage());const form=$('#otLoginForm',root);if(form)form.onsubmit=async e=>{e.preventDefault();const d=Object.fromEntries(new FormData(form));const {error}=await supabase().auth.signInWithPassword({email:d.email,password:d.password});if(error){$('#otLoginError',root).textContent=error.message;return;}await render();};$('#otMenu',root)?.addEventListener('click',()=>$('.ot-sidebar',root).classList.toggle('open'));return;} }
