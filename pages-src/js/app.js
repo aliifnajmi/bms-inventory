@@ -288,7 +288,8 @@ function openItemModal(id) {
   const codePrefix = (category) => ({
     'Cables & Wires': 'CABL',
     'Conduits & Raceways': 'COND',
-    'Consumables, Chemicals & Maintenance': 'CONS',
+    'Consumables': 'CONS',
+    'Chemicals & Maintenance': 'CHEM',
     'Electrical & Control Accessories': 'ELEC',
     'Sensors & Lighting': 'SENS',
     'Tools & Equipment': 'TOOL'
