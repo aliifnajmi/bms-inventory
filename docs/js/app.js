@@ -1,7 +1,7 @@
 'use strict';
 
 /* ============================================================
-   BMS IMS — frontend application (vanilla JS SPA, hash router)
+   EXCHANGE 106 | BMS SUPERAPPS — frontend application (vanilla JS SPA, hash router)
    ============================================================ */
 
 /* ---------- icons (feather-style inline SVG) ---------- */
@@ -99,12 +99,13 @@ function emptyRow(colspan, msg = 'No records found.') {
 }
 
 function downloadCsv(filename, headers, rows) {
-  const escCsv = (v) => {
-    v = v === null || v === undefined ? '' : String(v);
-    return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+  const escCsv = (value) => {
+    let v = value === null || value === undefined ? '' : String(value);
+    if (typeof value === 'string' && /^[=+@\t\r]/.test(v)) v = "'" + v;
+    return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
   };
-  const csv = [headers.map(escCsv).join(','), ...rows.map((r) => r.map(escCsv).join(','))].join('\r\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }); // BOM for Excel
+  const csv = [['EXCHANGE 106 | BMS SUPERAPPS'], ['Generated', new Date().toLocaleString()], [], headers, ...rows].map((r) => r.map(escCsv).join(',')).join('\r\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;
@@ -652,7 +653,7 @@ async function renderDashboard() {
           XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(exportRows.overview), 'Overview');
           XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(exportRows.low), 'Low Stock');
           XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(exportRows.transactions), 'Transactions');
-          XLSX.writeFile(wb, `bms-dashboard-report-${todayStr()}.xlsx`);
+          XLSX.writeFile(wb, `exchange106-dashboard-report-${todayStr()}.xlsx`);
           toast('Excel report generated.');
         } catch (e) { toast(e.message, 'error'); }
       };
@@ -663,7 +664,7 @@ async function renderDashboard() {
           const { jsPDF } = window.jspdf;
           const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
           doc.setFontSize(18);
-          doc.text('BMS IMS — Dashboard Report', 14, 16);
+          doc.text('EXCHANGE 106 | BMS SUPERAPPS — Dashboard Report', 14, 16);
           doc.setFontSize(9);
           doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 23);
           doc.autoTable({ startY: 29, head: [exportRows.overview[0]], body: exportRows.overview.slice(1), theme: 'grid', styles: { fontSize: 9 }, headStyles: { fillColor: [13, 36, 51] } });
@@ -673,7 +674,7 @@ async function renderDashboard() {
           y = doc.lastAutoTable.finalY + 10;
           doc.setFontSize(13); doc.text('Recent Transactions', 14, y); y += 5;
           doc.autoTable({ startY: y, head: [exportRows.transactions[0]], body: exportRows.transactions.slice(1), theme: 'grid', styles: { fontSize: 7 }, headStyles: { fillColor: [13, 36, 51] } });
-          doc.save(`bms-dashboard-report-${todayStr()}.pdf`);
+          doc.save(`exchange106-dashboard-report-${todayStr()}.pdf`);
           toast('PDF report generated.');
         } catch (e) { toast(e.message, 'error'); }
       };
@@ -761,7 +762,7 @@ async function renderInventory() {
       $('#btnAddItem').onclick = () => openItemModal();
       $('#btnExportInv').onclick = () => {
         downloadCsv(
-          `bms-inventory-${todayStr()}.csv`,
+          `exchange106-inventory-${todayStr()}.csv`,
           ['Item Code', 'Item Name', 'Category', 'Subcategory', 'Brand', 'Model', 'Part Number', 'Unit', 'Location', 'Minimum Stock', 'Maximum Stock', 'Opening Stock', 'Stock Balance', 'Status'],
           items.map((i) => [i.item_code, i.item_name, i.category, i.subcategory, i.brand, i.model, i.part_number, i.unit, i.location, i.minimum_stock, i.maximum_stock, i.opening_stock, i.balance, i.status])
         );
@@ -847,12 +848,12 @@ async function renderStockOut() {
       <div class="card-body">
         <form id="stockOutForm">
           <div class="form-grid">
-            <div class="field"><label class="req">Date</label><input type="date" id="so_date" value="${todayStr()}"></div>
+            <div class="field"><label class="req">Date</label><input type="date" id="so_date" value="${todayStr()}" required></div>
             ${itemSelectHtml('so_item')}
-            <div class="field"><label class="req">Quantity</label><input type="number" id="so_qty" min="1" step="1" placeholder="e.g. 2"></div>
+            <div class="field"><label class="req">Quantity</label><input type="number" id="so_qty" min="1" step="1" placeholder="e.g. 2" required></div>
             <div class="field"><label>Unit</label><input id="so_unit" readonly placeholder="Auto from item"></div>
             <div class="field"><label>Issued To</label><input id="so_to" placeholder="e.g. BMS Team - Level 35"></div>
-            <div class="field"><label>Work Order / Job Ref</label><input id="so_wo" placeholder="e.g. WO-2026-015"></div>
+            <div class="field"><label>Work Order / Job Ref</label><input id="so_wo" maxlength="80" placeholder="e.g. WO-2026-015 or PM-2026-015"><small class="hint">Enter the official maintenance job reference if available. The system creates a separate transaction ID automatically.</small></div>
             <div class="field"><label>Area / Location</label><input id="so_area" placeholder="e.g. Level 35"></div>
             <div class="field"><label>Reason</label><input id="so_reason" placeholder="e.g. Replacement of faulty sensor"></div>
             <div class="field"><label>Issued By</label><input id="so_by" value="BMS Technician"></div>
@@ -994,7 +995,7 @@ async function renderTransactions() {
       $('#txnTo').onchange = (e) => { state.txn.to = e.target.value; load(); };
       $('#btnExportTxn').onclick = () => {
         downloadCsv(
-          `bms-transactions-${todayStr()}.csv`,
+          `exchange106-transactions-${todayStr()}.csv`,
           ['Transaction Date', 'Created At', 'Transaction ID', 'Action', 'Item Code', 'Item Name', 'Category', 'Quantity', 'Unit', 'Reference', 'Supplier', 'Issued To', 'Work Order', 'Area', 'Reason', 'Recorded By', 'Remarks'],
           txns.map((t) => [t.transaction_date, t.created_at ? new Date(t.created_at).toLocaleString() : '', t.transaction_id, t.transaction_type, t.item_code, t.item_name, t.category || '', t.transaction_type === 'STOCK_OUT' ? -t.quantity : t.quantity, t.unit, t.reference, t.supplier, t.issued_to, t.work_order, t.area, t.reason, t.user || t.user_name || t.issued_by || t.received_by, t.remarks])
         );
@@ -1052,7 +1053,7 @@ async function renderAuditTrail() {
     $('#auditSearch').addEventListener('input', debouncedLoad);
     $('#auditUser').addEventListener('input', debouncedLoad);
     ['auditType','auditFrom','auditTo'].forEach(id => $('#'+id).addEventListener('change', () => load().catch(e => toast(e.message, 'error'))));
-    $('#btnAuditExport').onclick = () => downloadCsv('bms-audit-trail-' + todayStr() + '.csv',
+    $('#btnAuditExport').onclick = () => downloadCsv('exchange106-audit-trail-' + todayStr() + '.csv',
       ['Transaction Date','Created At','Transaction ID','Action','Item Code','Item Name','Quantity','Unit','Reference','Work Order','Area','Recorded By','Reason','Remarks'],
       records.map(t => [t.transaction_date,t.created_at,t.transaction_id,t.transaction_type,t.item_code,t.item_name,t.transaction_type==='STOCK_OUT'?-t.quantity:t.quantity,t.unit,t.reference,t.work_order,t.area,t.user||t.user_name||t.issued_by||t.received_by,t.reason,t.remarks]));
     load().catch(e => toast(e.message, 'error'));
@@ -1248,15 +1249,15 @@ async function renderReports() {
     html,
     bind: () => {
       $('#expInv').onclick = () =>
-        downloadCsv(`bms-inventory-report-${todayStr()}.csv`,
+        downloadCsv(`exchange106-inventory-report-${todayStr()}.csv`,
           ['Item Code', 'Item Name', 'Category', 'Subcategory', 'Brand', 'Model', 'Part Number', 'Unit', 'Location', 'Minimum Stock', 'Maximum Stock', 'Opening Stock', 'Stock Balance', 'Status'],
           items.map((i) => [i.item_code, i.item_name, i.category, i.subcategory, i.brand, i.model, i.part_number, i.unit, i.location, i.minimum_stock, i.maximum_stock, i.opening_stock, i.balance, i.status]));
       $('#expLow').onclick = () =>
-        downloadCsv(`bms-low-stock-report-${todayStr()}.csv`,
+        downloadCsv(`exchange106-low-stock-report-${todayStr()}.csv`,
           ['Item Code', 'Item Name', 'Category', 'Location', 'Unit', 'Current Stock', 'Minimum Stock', 'Status'],
           low.map((i) => [i.item_code, i.item_name, i.category, i.location, i.unit, i.balance, i.minimum_stock, i.status]));
       $('#expTxn').onclick = () =>
-        downloadCsv(`bms-stock-movement-report-${todayStr()}.csv`,
+        downloadCsv(`exchange106-stock-movement-report-${todayStr()}.csv`,
           ['Date', 'Transaction ID', 'Type', 'Item Code', 'Item Name', 'Quantity', 'Unit', 'Reference', 'Supplier', 'Issued To', 'Work Order', 'Area', 'Reason', 'User', 'Remarks'],
           txns.map((t) => [t.transaction_date, t.transaction_id, t.transaction_type, t.item_code, t.item_name, t.transaction_type === 'STOCK_OUT' ? -t.quantity : t.quantity, t.unit, t.reference, t.supplier, t.issued_to, t.work_order, t.area, t.reason, t.user, t.remarks]));
     },
@@ -1274,9 +1275,9 @@ async function renderSettings() {
         <div class="card-body">${adjustmentHtml('set')}</div>
       </div>
       <div class="card">
-        <div class="card-head"><h2>${icon('info', 17)} About BMS IMS</h2></div>
+        <div class="card-head"><h2>${icon('info', 17)} About EXCHANGE 106 | BMS SUPERAPPS</h2></div>
         <div class="card-body">
-          <p><strong>BMS IMS</strong> — Building Management System Inventory &amp; Stock Control.</p>
+          <p><strong>EXCHANGE 106 | BMS SUPERAPPS</strong> — Building Management System Inventory &amp; Stock Control.</p>
           <p class="muted" style="margin-top:4px">Version 1.0.0 · A simple store &amp; spare-parts inventory system for BMS technicians and store operators.</p>
           <div class="formula-box">
             <strong>Stock Balance</strong> = Opening Stock + Σ Stock In − Σ Stock Out + Σ Adjustment
@@ -1439,7 +1440,7 @@ async function init() {
   try {
     await reloadMaster();
   } catch (e) {
-    toast('Cannot reach the BMS IMS API — is the server running?', 'error');
+    toast('Cannot reach the EXCHANGE 106 | BMS SUPERAPPS API — is the server running?', 'error');
   }
   router();
 }
