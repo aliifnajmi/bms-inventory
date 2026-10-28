@@ -104,7 +104,7 @@ function downloadCsv(filename, headers, rows) {
     if (typeof value === 'string' && /^[=+@\t\r]/.test(v)) v = "'" + v;
     return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
   };
-  const csv = [headers.map(escCsv).join(','), ...rows.map((r) => r.map(escCsv).join(','))].join('\r\n');
+  const csv = [['EXCHANGE 106 | BMS SUPERAPPS'], ['Generated', new Date().toLocaleString()], [], headers, ...rows].map((r) => r.map(escCsv).join(',')).join('\r\n');
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
