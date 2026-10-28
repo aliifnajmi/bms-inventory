@@ -20,13 +20,15 @@
     ? -Number(t.quantity)
     : Number(t.quantity);
 
-  function csvDownload(filename, headers, rows) {
+  function csvDownload(filename, title, from, to, headers, rows) {
     const q = (v) => {
-      const x = String(v ?? '');
-      return /[",\n]/.test(x) ? `"${x.replace(/"/g, '""')}"` : x;
+      let x = String(v ?? '');
+      if (typeof v === 'string' && /^[=+@\\t\\r]/.test(x)) x = "'" + x;
+      return /[",\\n\\r]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x;
     };
-    const csv = [headers, ...rows].map(r => r.map(q).join(',')).join('\r\n');
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+    const meta = [['EXCHANGE 106 | BMS SUPERAPPS'], [title], ['Report Period', (from || '—') + ' to ' + (to || '—')], ['Generated', new Date().toLocaleString()], [], headers, ...rows];
+    const csv = meta.map(r => r.map(q).join(',')).join('\\r\\n');
+    const blob = new Blob(['\\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = filename;
@@ -141,7 +143,7 @@
     const title = type === 'inventory' ? 'Inventory Report' : type === 'low-stock' ? 'Low Stock Report' : 'Stock Movement Report';
     const r = rowsFor(type, data);
     doc.setFontSize(18);
-    doc.text(`BMS IMS — ${title}`, 14, 16);
+    doc.text(`EXCHANGE 106 | BMS SUPERAPPS — ${title}`, 14, 16);
     doc.setFontSize(9);
     doc.text(`Report Period: ${from || '—'} to ${to || '—'}   |   Generated: ${new Date().toLocaleString()}`, 14, 23);
     doc.autoTable({
@@ -153,7 +155,7 @@
       headStyles: { fillColor: [13, 36, 51] },
       margin: { left: 10, right: 10 }
     });
-    doc.save(`bms-${type}-report-${from || today()}-to-${to || today()}.pdf`);
+    doc.save(`exchange106-${type}-report-${from || today()}-to-${to || today()}.pdf`);
   }
 
   function makeExcel(type, data, from, to) {
@@ -162,7 +164,7 @@
     const r = rowsFor(type, data);
     const wb = XLSX.utils.book_new();
     const info = [
-      ['BMS IMS — ' + title],
+      ['EXCHANGE 106 | BMS SUPERAPPS — ' + title],
       ['Report Period', `${from || '—'} to ${to || '—'}`],
       ['Generated', new Date().toLocaleString()],
       [],
@@ -172,7 +174,7 @@
     const ws = XLSX.utils.aoa_to_sheet(info);
     ws['!cols'] = r.headers.map(h => ({ wch: Math.min(Math.max(h.length + 2, 12), 28) }));
     XLSX.utils.book_append_sheet(wb, ws, title.substring(0, 31));
-    XLSX.writeFile(wb, `bms-${type}-report-${from || today()}-to-${to || today()}.xlsx`);
+    XLSX.writeFile(wb, `exchange106-${type}-report-${from || today()}-to-${to || today()}.xlsx`);
   }
 
   function render() {
@@ -246,7 +248,7 @@
     $('#rcCsv').onclick = () => {
       try {
         const r = rowsFor(reportType, reportData);
-        csvDownload(`bms-${reportType}-report-${reportFrom || today()}-to-${reportTo || today()}.csv`, r.headers, r.rows);
+        csvDownload(`exchange106-${reportType}-report-${reportFrom || today()}-to-${reportTo || today()}.csv`, reportType === 'inventory' ? 'Inventory Report' : reportType === 'low-stock' ? 'Low Stock Report' : 'Stock Movement Report', reportFrom, reportTo, r.headers, r.rows);
       } catch (e) { alert(e.message); }
     };
   }
