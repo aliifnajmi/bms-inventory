@@ -451,6 +451,7 @@ const NAV = [
   { route: '/settings', icon: 'sliders', label: 'Settings' },
   { section: 'Daily Operations' },
   { route: '/daily-operations/fcu-extension', icon: 'check', label: 'Tenant FCU Extension' },
+  { href: 'bms-base-schedule.html', icon: 'list', label: 'BMS Base Schedule' },
   { section: 'Overtime Management' },
   { route: '/overtime', icon: 'chart', label: 'OT Management' },
 ];
@@ -459,7 +460,9 @@ function buildNav() {
   $('#nav').innerHTML = NAV.map((n) =>
     n.section
       ? `<div class="nav-section">${esc(n.section)}</div>`
-      : `<a href="#${n.route}" data-route="${n.route}">${icon(n.icon, 19)}<span>${esc(n.label)}</span></a>`
+      : n.href
+        ? `<a href="${n.href}">${icon(n.icon, 19)}<span>${esc(n.label)}</span></a>`
+        : `<a href="#${n.route}" data-route="${n.route}">${icon(n.icon, 19)}<span>${esc(n.label)}</span></a>`
   ).join('');
   $('#menuBtn').innerHTML = icon('menu', 20);
 }
