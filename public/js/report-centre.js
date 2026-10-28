@@ -23,12 +23,12 @@
   function csvDownload(filename, title, from, to, headers, rows) {
     const q = (v) => {
       let x = String(v ?? '');
-      if (typeof v === 'string' && /^[=+@\\t\\r]/.test(x)) x = "'" + x;
-      return /[",\\n\\r]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x;
+      if (typeof v === 'string' && /^[=+@\t\r]/.test(x)) x = "'" + x;
+      return /[",\n\r]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x;
     };
     const meta = [['EXCHANGE 106 | BMS SUPERAPPS'], [title], ['Report Period', (from || '—') + ' to ' + (to || '—')], ['Generated', new Date().toLocaleString()], [], headers, ...rows];
-    const csv = meta.map(r => r.map(q).join(',')).join('\\r\\n');
-    const blob = new Blob(['\\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+    const csv = meta.map(r => r.map(q).join(',')).join('\r\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = filename;
