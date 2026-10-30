@@ -82,17 +82,40 @@ tbody tr:hover td{background:#f6fbfa}
 mark{background:#ccfbf1;color:#134e4a}
 @media(max-width:900px){.wrap{padding:12px}.layout{grid-template-columns:1fr}.floors{max-height:45vh}header.top{grid-template-columns:1fr auto;gap:12px;padding:15px}.brand-home{grid-column:1/-1}.page-heading{grid-column:1/-1;grid-row:2}.back{grid-column:1/-1;justify-self:start}.scroll{max-height:65vh}}
 @media(max-width:480px){header.top{border-radius:15px}.brand-home small{max-width:240px}.page-heading h1{font-size:24px}.panel{border-radius:14px}.panel h2{padding:14px 14px 0}.panel .sub{padding-left:14px;padding-right:14px}.search{padding-left:14px;padding-right:14px}.bar{padding:13px}.bar .search{min-width:100%}.count{margin-left:0}}
+/* BMS SUPERAPPS premium shell — visual refresh only; schedule data and mappings remain unchanged. */
+:root{--bg:#f3f6fc;--card:rgba(255,255,255,.92);--ink:#17243a;--mute:#64748b;--line:#dbe4f0;--accent:#2563eb;--accent-ink:#fff;--hl:#dbeafe;--head:#edf3fb}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1220;--card:rgba(17,27,45,.94);--ink:#e8eef8;--mute:#9aa9bf;--line:#26364f;--accent:#60a5fa;--accent-ink:#071426;--hl:#233b61;--head:#17263d}}
+body{background:radial-gradient(ellipse at 8% 0%,rgba(59,130,246,.12),transparent 34%),var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1540px;padding:clamp(14px,2vw,28px)}
+header.top{padding:18px 20px;margin-bottom:20px;border:1px solid var(--line);border-radius:20px;background:var(--card);box-shadow:0 12px 36px rgba(15,23,42,.07);backdrop-filter:blur(16px)}
+header.top h1{font-size:clamp(21px,2vw,28px);font-weight:800;letter-spacing:-.035em}
+header.top .crumb{padding:5px 10px;border-radius:999px;background:var(--head);font-weight:650}
+header.top a.back{padding:10px 14px;border-radius:12px;background:var(--accent);color:var(--accent-ink);box-shadow:0 5px 16px rgba(37,99,235,.2);transition:transform .16s ease,opacity .16s ease}
+header.top a.back:hover{transform:translateY(-1px);opacity:.92}
+.layout{gap:18px}
+.panel{border-radius:18px;box-shadow:0 12px 32px rgba(15,23,42,.055);backdrop-filter:blur(12px)}
+.panel h2{padding:17px 17px 0;font-size:15px;font-weight:750;letter-spacing:-.01em}
+.panel .sub{padding:4px 17px 13px;line-height:1.55}
+.search{padding:0 17px 15px}
+.search input{border-radius:11px;padding:11px 13px;transition:border-color .15s ease,box-shadow .15s ease}
+.search input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.floors,.scroll{border-top-color:var(--line)}
+th,td{padding:9px 12px}
+thead th{font-size:11.5px;text-transform:uppercase;letter-spacing:.045em;font-weight:750}
+tbody tr:hover td{background:rgba(59,130,246,.055)}
+.bar{padding:15px 17px}
+.count{font-weight:650}
+.note{padding:13px 17px;line-height:1.55}
+@media (max-width:900px){header.top{padding:15px;border-radius:16px}header.top a.back{margin-left:0}.panel{border-radius:16px}}
+
 </style>
 </head>
 <body>
 <div class="wrap">
  <header class="top">
-  <a class="brand-home" href="index.html" aria-label="Back to BMS SUPERAPPS home">
-   <img src="https://cdn.brandfetch.io/idym1nRWUa/w/2048/h/2048/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1783323508223" alt="Exchange 106 logo">
-   <span><strong>BMS SUPERAPPS</strong><small>Building Management Operations Platform</small></span>
-  </a>
-  <div class="page-heading"><span class="crumb">DAILY OPERATIONS</span><h1>BMS Base Schedule</h1><p>Reference jadual asas sistem dan pemetaan Construction Floor ↔ Marketing Floor.</p></div>
-  <a class="back" href="index.html">← Back to Home</a>
+  <h1>BMS Base Schedule</h1>
+  <span class="crumb">Daily Operations · Reference Library</span>
+  <a class="back" href="index.html">← Back to BMS SUPERAPPS</a>
  </header>
 
  <div class="layout">
