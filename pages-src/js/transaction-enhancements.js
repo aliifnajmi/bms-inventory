@@ -6,8 +6,8 @@
   function ensureReportStyles() {
     if (document.getElementById('txnReportStyles')) return;
     var style = document.createElement('style'); style.id = 'txnReportStyles';
-    style.textContent = '.txn-report-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px;padding:12px;border:1px solid var(--border);border-radius:10px;background:#f8fafc}.txn-report-controls label{font-weight:700;font-size:12px}.txn-report-controls select{padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:#fff}.txn-report-controls span{font-size:12px;color:var(--muted)}.txn-report-paper{margin:0 auto 14px;background:#fff;color:#172033;border:1px solid #dbe3ec;border-radius:12px;padding:20px;box-shadow:0 5px 20px rgba(15,23,42,.07);box-sizing:border-box}.txn-paper-a4{width:100%;max-width:740px;min-height:600px}.txn-paper-square{width:min(100%,420px);min-height:0;padding:14px}.txn-report-heading{display:flex;justify-content:space-between;gap:14px;padding-bottom:14px;margin-bottom:14px;border-bottom:2px solid #1c375a}.txn-report-heading small{font-size:9px;letter-spacing:.08em;color:#64748b;font-weight:800}.txn-report-heading h2{font-size:17px;line-height:1.25;margin:6px 0;color:#1c375a}.txn-report-heading p{font-size:12px;color:#64748b;margin:0}.txn-report-code{text-align:right;min-width:92px}.txn-report-code>strong{display:block;font-size:12px;overflow-wrap:anywhere}.txn-report-code>span{display:block;font-size:9px;color:#64748b;margin:3px 0 8px}.txn-qr-box{width:84px;height:84px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:4px;box-sizing:border-box;margin-left:auto}.txn-qr-box canvas,.txn-qr-box img{max-width:100%;max-height:100%}.txn-signatures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:28px;padding-top:12px;border-top:1px solid #cbd5e1}.txn-signature{padding-top:28px;border-bottom:1px solid #64748b;min-height:1px}.txn-signature-label{font-size:9px;color:#475569;margin-top:6px}.txn-company-logo{max-width:115px;max-height:48px;object-fit:contain;object-position:left center;margin-bottom:7px}.txn-paper-square .txn-signatures{grid-template-columns:1fr;gap:10px}.txn-paper-square .txn-signature{padding-top:16px}.txn-paper-square .txn-report-heading h2{font-size:13px}.txn-paper-square .txn-report-heading{gap:8px}.txn-paper-square .txn-detail-grid{grid-template-columns:1fr;padding:10px;gap:9px}.txn-paper-square .txn-detail-grid .full{grid-column:auto}.txn-paper-square .txn-preview-top{margin-bottom:9px}@media(max-width:600px){.txn-report-paper{padding:12px}.txn-paper-a4{min-height:0}.txn-report-heading h2{font-size:14px}.txn-report-code{min-width:78px}}';
-    style.textContent += '.txn-general-reference{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:18px;padding:12px 14px;border:1px solid #dbe3ec;border-radius:10px;background:#f8fafc}.txn-general-reference strong,.txn-general-reference span,.txn-general-reference small{display:block}.txn-general-reference strong{font-size:11px;color:#1c375a;letter-spacing:.06em}.txn-general-reference span{font-size:10px;font-weight:700;color:#334155;margin-top:3px}.txn-general-reference small{font-size:9px;color:#64748b;margin-top:3px}.txn-general-qr{width:66px;height:66px;flex:none;padding:3px;border:1px solid #e2e8f0;border-radius:6px;background:#fff}.txn-general-qr canvas,.txn-general-qr img{max-width:100%;max-height:100%}@media(max-width:480px){.txn-general-reference{padding:9px}.txn-general-qr{width:58px;height:58px}}';
+    style.textContent = '.txn-report-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px;padding:12px;border:1px solid var(--border);border-radius:10px;background:#f8fafc}.txn-report-controls label{font-weight:700;font-size:12px}.txn-report-controls select{padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:#fff}.txn-report-controls span{font-size:12px;color:var(--muted)}.txn-report-paper{margin:0 auto 14px;background:#fff;color:#172033;border:1px solid #dbe3ec;border-radius:12px;padding:20px;box-shadow:0 5px 20px rgba(15,23,42,.07);box-sizing:border-box}.txn-paper-a4{width:100%;max-width:740px;min-height:600px}.txn-paper-square{width:min(100%,420px);min-height:0;padding:14px}.txn-report-heading{display:flex;justify-content:space-between;gap:14px;padding-bottom:14px;margin-bottom:14px;border-bottom:2px solid #1c375a}.txn-report-heading small{font-size:9px;letter-spacing:.08em;color:#64748b;font-weight:800}.txn-report-heading h2{font-size:17px;line-height:1.25;margin:6px 0;color:#1c375a}.txn-report-heading p{font-size:12px;color:#64748b;margin:0}.txn-report-code{text-align:right;min-width:92px;display:flex;flex-direction:column;align-items:flex-end}.txn-workorder-blank{display:inline-block;min-width:110px;height:14px;border-bottom:1px solid #64748b;vertical-align:bottom}.txn-paper-square .txn-workorder-blank{min-width:72px;height:12px}.txn-report-code>strong{display:block;font-size:12px;overflow-wrap:anywhere}.txn-report-code>span{display:block;font-size:9px;color:#64748b;margin:3px 0 8px}.txn-qr-box{width:84px;height:84px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:4px;box-sizing:border-box;margin-left:auto}.txn-qr-box canvas,.txn-qr-box img{max-width:100%;max-height:100%}.txn-signatures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:28px;padding-top:12px;border-top:1px solid #cbd5e1}.txn-signature{padding-top:28px;border-bottom:1px solid #64748b;min-height:1px}.txn-signature-label{font-size:9px;color:#475569;margin-top:6px}.txn-company-logo{max-width:115px;max-height:48px;object-fit:contain;object-position:left center;margin-bottom:7px}.txn-paper-square .txn-signatures{grid-template-columns:1fr;gap:10px}.txn-paper-square .txn-signature{padding-top:16px}.txn-paper-square .txn-report-heading h2{font-size:13px}.txn-paper-square .txn-report-heading{gap:8px}.txn-paper-square .txn-detail-grid{grid-template-columns:1fr;padding:10px;gap:9px}.txn-paper-square .txn-detail-grid .full{grid-column:auto}.txn-paper-square .txn-preview-top{margin-bottom:9px}@media(max-width:600px){.txn-report-paper{padding:12px}.txn-paper-a4{min-height:0}.txn-report-heading h2{font-size:14px}.txn-report-code{min-width:78px}}';
+    style.textContent += '.txn-general-reference{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:18px;padding:12px 14px;border:1px solid #dbe3ec;border-radius:10px;background:#f8fafc;break-inside:avoid}.txn-general-reference>div:first-child{flex:1;min-width:0}.txn-general-qr{display:flex;align-items:center;justify-content:center}.txn-general-qr canvas,.txn-general-qr img{display:block;width:100%;height:100%;object-fit:contain}.txn-paper-square .txn-general-reference{gap:8px;margin-top:10px;padding:8px}.txn-paper-square .txn-general-reference small{font-size:7px}.txn-general-reference strong,.txn-general-reference span,.txn-general-reference small{display:block}.txn-general-reference strong{font-size:11px;color:#1c375a;letter-spacing:.06em}.txn-general-reference span{font-size:10px;font-weight:700;color:#334155;margin-top:3px}.txn-general-reference small{font-size:9px;color:#64748b;margin-top:3px}.txn-general-qr{width:66px;height:66px;flex:none;padding:3px;border:1px solid #e2e8f0;border-radius:6px;background:#fff}.txn-general-qr canvas,.txn-general-qr img{max-width:100%;max-height:100%}@media(max-width:480px){.txn-general-reference{padding:9px}.txn-general-qr{width:58px;height:58px}}';
     document.head.appendChild(style);
   }
   function openTxnPreview(t, refresh) {
@@ -51,15 +51,62 @@
       var size = document.getElementById('txnReportSize') ? document.getElementById('txnReportSize').value : 'a4';
       var doc = new jsPDF(size === 'square' ? {orientation:'portrait',unit:'mm',format:[100,100]} : {orientation:'portrait',unit:'mm',format:'a4'});
       var pageWidth = doc.internal.pageSize.getWidth();
-      var margin = size === 'square' ? 7 : 14;
+      var pageHeight = doc.internal.pageSize.getHeight();
+      var isSquare = size === 'square';
+      var margin = isSquare ? 6 : 14;
       var usableWidth = pageWidth - margin * 2;
-      var logoImage = new Image(); logoImage.crossOrigin = 'anonymous'; logoImage.src = 'https://cdn.brandfetch.io/idym1nRWUa/w/2048/h/2048/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1783323508223';
-      try { await new Promise(function(resolve,reject){ logoImage.onload=resolve; logoImage.onerror=reject; }); doc.addImage(logoImage,'JPEG',margin,margin,24,11); } catch (_) {}
-      doc.setFontSize(size === 'square' ? 10 : 15); doc.text('EXCHANGE 106 · BUILDING MANAGEMENT OPERATIONS',margin+27,margin+4); doc.setFontSize(size === 'square' ? 9 : 13); doc.text('WORK ORDER / TRANSACTION REPORT',margin+27,margin+10);
-      doc.setFontSize(8); doc.text('Work Order / Job Ref: '+String(t.work_order||'Not specified'),margin,margin+16); doc.text('System Transaction ID: '+String(t.transaction_id||''),margin,margin+20);
-      doc.text('Date: '+String(t.transaction_date||'—')+'  |  Generated: '+new Date().toLocaleDateString(),margin,margin+25);
+      var qrSize = isSquare ? 14 : 19;
+      var qrX = pageWidth - margin - qrSize;
+      var qrY = margin + (isSquare ? 2 : 1);
+      var logoImage = new Image();
+      logoImage.crossOrigin = 'anonymous';
+      logoImage.src = 'https://cdn.brandfetch.io/idym1nRWUa/w/2048/h/2048/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1783323508223';
+      try {
+        await new Promise(function(resolve,reject){ logoImage.onload=resolve; logoImage.onerror=reject; });
+        if (isSquare) doc.addImage(logoImage,'JPEG',margin,margin,11,8);
+        else doc.addImage(logoImage,'JPEG',margin,margin,24,11);
+      } catch (_) {}
+      // Reserve a dedicated QR column in the header so the title never collides with it.
+      if (isSquare) {
+        doc.setTextColor(28,55,90);
+        doc.setFontSize(8);
+        doc.text('EXCHANGE 106 · BMS',margin+13,margin+3,{maxWidth:pageWidth-margin-(margin+13)-qrSize-3});
+        doc.setFontSize(7);
+        doc.text('WORK ORDER REPORT',margin+13,margin+7,{maxWidth:pageWidth-margin-(margin+13)-qrSize-3});
+      } else {
+        doc.setTextColor(28,55,90);
+        doc.setFontSize(12);
+        doc.text('EXCHANGE 106 · BUILDING MANAGEMENT',margin+27,margin+4,{maxWidth:pageWidth-margin-(margin+27)-qrSize-4});
+        doc.setFontSize(11);
+        doc.text('WORK ORDER / TRANSACTION REPORT',margin+27,margin+10,{maxWidth:pageWidth-margin-(margin+27)-qrSize-4});
+      }
+      doc.setTextColor(0,0,0);
+      var codeY = isSquare ? margin+18 : margin+19;
+      doc.setFontSize(isSquare ? 5.8 : 8);
+      doc.text('WORK ORDER / JOB REF:',margin,codeY);
+      var jobRef = String(t.work_order || '').trim();
+      var lineStart = margin + (isSquare ? 27 : 36);
+      var lineEnd = isSquare ? pageWidth-margin-qrSize-3 : pageWidth-margin-qrSize-5;
+      if (jobRef) {
+        doc.text(jobRef,lineStart,codeY,{maxWidth:Math.max(8,lineEnd-lineStart)});
+      } else {
+        doc.setDrawColor(100,116,139);
+        doc.line(lineStart,codeY+1,lineEnd,codeY+1);
+      }
+      doc.setFontSize(isSquare ? 5.4 : 8);
+      doc.text('SYSTEM TRANSACTION ID:',margin,codeY+(isSquare?4:5));
+      doc.text(String(t.transaction_id || ''),margin+(isSquare?27:36),codeY+(isSquare?4:5),{maxWidth:usableWidth-(isSquare?28:37)});
+      doc.setFontSize(isSquare ? 5 : 7);
+      doc.text('DATE: '+String(t.transaction_date||'—')+'  ·  GENERATED: '+new Date().toLocaleDateString(),margin,codeY+(isSquare?8:10),{maxWidth:usableWidth-qrSize-3});
+      // Put the transaction QR on page one in a reserved header area (not after the table).
+      var qrCanvas=document.querySelector('#txnQrCode canvas');
+      if(qrCanvas){try{doc.addImage(qrCanvas.toDataURL('image/png'),'PNG',qrX,qrY,qrSize,qrSize);}catch(_){}}
+      doc.setFontSize(isSquare ? 4.5 : 6);
+      doc.setTextColor(71,85,105);
+      doc.text('TRANSACTION QR',qrX,qrY+qrSize+2,{maxWidth:qrSize});
+      doc.setTextColor(0,0,0);
       var rows = [
-        ['Work Order / Job Ref',t.work_order||'Not specified'],['System Transaction ID',t.transaction_id||'—'],['Transaction Date',t.transaction_date],['Transaction Type',t.transaction_type],
+        ['Work Order / Job Ref',jobRef],['System Transaction ID',t.transaction_id||'—'],['Transaction Date',t.transaction_date],['Transaction Type',t.transaction_type],
         ['Item Code',t.item_code],['Item Name',t.item_name],
         ['Quantity',String(t.transaction_type==='STOCK_OUT'?'−':t.transaction_type==='STOCK_IN'?'+':'')+String(t.quantity)+' '+String(t.unit||'')],
         ['Reference',t.reference||'—'],['Supplier',t.supplier||'—'],
@@ -68,25 +115,47 @@
         ['Remarks',t.remarks||'—'],['Recorded By',t.user_name||t.user||t.issued_by||t.received_by||'Not recorded'],
         ['Created At',t.created_at?new Date(t.created_at).toLocaleString():'Not available']
       ];
-      if (typeof doc.autoTable === 'function') doc.autoTable({startY:margin+31,margin:{left:margin,right:margin},tableWidth:usableWidth,head:[['Field','Work Order Details']],body:rows.map(function(r){return [String(r[0]),String(r[1]||'—')];}),styles:{fontSize:size==='square'?5.5:9,cellPadding:size==='square'?1.5:3,overflow:'linebreak'},headStyles:{fillColor:[28,55,90]},columnStyles:{0:{cellWidth:size==='square'?29:45},1:{cellWidth:'auto'}}});
-      else { var y=margin+35; rows.forEach(function(r){doc.setFontSize(7);doc.text(String(r[0])+': '+String(r[1]||'—').slice(0,70),margin,y); y+=5; if(y>doc.internal.pageSize.getHeight()-margin){doc.addPage();y=margin;}}); }
-      var qrCanvas=document.querySelector('#txnQrCode canvas'); if(qrCanvas){try{doc.addImage(qrCanvas.toDataURL('image/png'),'PNG',pageWidth-margin-(size==='square'?20:25),margin+2,size==='square'?17:22,size==='square'?17:22);}catch(_){}}
-      var signY=(doc.lastAutoTable&&doc.lastAutoTable.finalY?doc.lastAutoTable.finalY:margin+80)+18;if(signY>doc.internal.pageSize.getHeight()-28){doc.addPage();signY=22;}var signGap=usableWidth/3;[['Prepared By / Technician',0],['Checked By / Supervisor',1],['Approved By / Engineer',2]].forEach(function(sg){var x=margin+sg[1]*signGap;doc.setDrawColor(100,116,139);doc.line(x,signY,x+signGap-5,signY);doc.setFontSize(7);doc.text(sg[0],x,signY+5);});
-      // General BMS SUPERAPPS reference QR in the footer; preserve the existing transaction QR.
+      var tableStartY = isSquare ? margin+31 : margin+34;
+      if (typeof doc.autoTable === 'function') {
+        doc.autoTable({
+          startY:tableStartY,margin:{left:margin,right:margin,top:margin+4,bottom:margin+17},
+          tableWidth:usableWidth,head:[['FIELD','WORK ORDER DETAILS']],
+          body:rows.map(function(r){return [String(r[0]),String(r[1] == null || r[1] === '' ? '—' : r[1])];}),
+          styles:{fontSize:isSquare?4.4:8.5,cellPadding:isSquare?1:2.7,overflow:'linebreak',valign:'middle'},
+          headStyles:{fillColor:[28,55,90],fontSize:isSquare?4.5:8},
+          columnStyles:{0:{cellWidth:isSquare?27:45},1:{cellWidth:'auto'}},
+          rowPageBreak:'avoid'
+        });
+      } else {
+        var y=tableStartY;
+        rows.forEach(function(r){doc.setFontSize(isSquare?5:7);doc.text(String(r[0])+': '+String(r[1]||'—').slice(0,isSquare?36:70),margin,y,{maxWidth:usableWidth});y+=isSquare?3.5:5;});
+      }
+      var signY=(doc.lastAutoTable&&doc.lastAutoTable.finalY?doc.lastAutoTable.finalY:tableStartY+60)+(isSquare?5:10);
+      if(signY>pageHeight-margin-17){doc.addPage();signY=margin+7;}
+      var signGap=usableWidth/3;
+      [['Prepared By / Technician',0],['Checked By / Supervisor',1],['Approved By / Engineer',2]].forEach(function(sg){
+        var x=margin+sg[1]*signGap;
+        doc.setDrawColor(100,116,139);
+        doc.line(x,signY,x+signGap-3,signY);
+        doc.setFontSize(isSquare?4:6.5);
+        doc.text(sg[0],x,signY+3.5,{maxWidth:signGap-3});
+      });
+      // General system QR belongs to the footer of the final page, independent of the transaction QR.
       var refHost=document.createElement('div');
       refHost.style.cssText='position:fixed;left:-10000px;top:0;width:80px;height:80px;overflow:hidden;';
       document.body.appendChild(refHost);
       if(window.QRCode){
         new QRCode(refHost,{text:'https://github.com/aliifnajmi/bms-inventory',width:72,height:72,correctLevel:QRCode.CorrectLevel.M});
         var refCanvas=refHost.querySelector('canvas');
+        if(doc.internal.getNumberOfPages && doc.internal.getNumberOfPages()>1) doc.setPage(doc.internal.getNumberOfPages());
         var refPageHeight=doc.internal.pageSize.getHeight();
-        var refSize=size==='square'?9:12;
+        var refSize=isSquare?9:12;
         var refY=refPageHeight-margin-refSize;
         var refX=pageWidth-margin-refSize;
         if(refCanvas){try{doc.addImage(refCanvas.toDataURL('image/png'),'PNG',refX,refY,refSize,refSize);}catch(_){}}
-        doc.setFontSize(size==='square'?4.3:6);
+        doc.setFontSize(isSquare?4:6);
         doc.setTextColor(71,85,105);
-        doc.text('BMS SUPERAPPS — Building Management System Operations Platform',margin,refPageHeight-margin-3,{maxWidth:Math.max(20,usableWidth-refSize-4)});
+        doc.text('BMS SUPERAPPS · General system reference QR',margin,refPageHeight-margin-3,{maxWidth:Math.max(20,usableWidth-refSize-4)});
         doc.setTextColor(0,0,0);
       }
       refHost.remove();
