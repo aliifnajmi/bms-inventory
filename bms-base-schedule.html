@@ -108,14 +108,45 @@ tbody tr:hover td{background:rgba(59,130,246,.055)}
 .note{padding:13px 17px;line-height:1.55}
 @media (max-width:900px){header.top{padding:15px;border-radius:16px}header.top a.back{margin-left:0}.panel{border-radius:16px}}
 
+/* Unified BMS SUPERAPPS shell — consistent with the main application. */
+:root{--bg:#f3f6fc;--card:#fff;--ink:#17243a;--mute:#64748b;--line:#dbe4f0;--accent:#2563eb;--accent-ink:#fff;--hl:#dbeafe;--head:#edf3fb}
+body{background:radial-gradient(ellipse at 8% 0%,rgba(59,130,246,.12),transparent 34%),var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1540px;padding:clamp(14px,2vw,28px)}
+header.top.schedule-top{display:grid;grid-template-columns:auto minmax(220px,1fr) auto;gap:20px;align-items:center;padding:18px 20px;margin-bottom:20px;border:1px solid var(--line);border-radius:20px;background:var(--card);box-shadow:0 12px 36px rgba(15,23,42,.07);color:var(--ink)}
+.schedule-brand{display:flex;align-items:center;gap:11px;min-width:0;padding:4px;color:var(--ink);text-decoration:none;border-radius:12px}
+.schedule-brand img{width:42px;height:42px;object-fit:cover;border-radius:12px}
+.schedule-brand span{display:flex;flex-direction:column;gap:3px}
+.schedule-brand strong{font-size:13px;letter-spacing:.035em}
+.schedule-brand small{font-size:10px;color:var(--mute)}
+.schedule-heading .crumb{display:inline-block;padding:5px 10px;border-radius:999px;background:var(--head);color:var(--accent);font-size:10px;font-weight:800;letter-spacing:.08em}
+.schedule-heading h1{margin:7px 0 0;font-size:clamp(21px,2vw,28px);font-weight:800;letter-spacing:-.035em;color:var(--ink)}
+.schedule-heading p{margin:5px 0 0;color:var(--mute);font-size:12px}
+header.top.schedule-top a.back{margin:0;padding:10px 14px;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-size:12px;box-shadow:0 5px 16px rgba(37,99,235,.16)}
+.layout{grid-template-columns:minmax(265px,330px) minmax(0,1fr);gap:18px}
+.panel{border-radius:18px;border-color:var(--line);box-shadow:0 12px 32px rgba(15,23,42,.055);background:var(--card)}
+.panel h2{padding:17px 17px 0;font-size:15px;font-weight:750;letter-spacing:-.01em}
+.panel .sub{padding:4px 17px 13px;line-height:1.55}
+.search{padding:0 17px 15px}
+.search input{border-radius:11px;padding:11px 13px}
+.floors,.scroll{border-top-color:var(--line)}
+thead th{background:var(--head);color:var(--mute);font-size:11px;text-transform:uppercase;letter-spacing:.045em;font-weight:750}
+tbody tr:hover td{background:rgba(59,130,246,.055)}
+.bar{padding:15px 17px}
+.count{display:inline-flex;padding:7px 10px;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:11px;font-weight:750}
+.note{padding:13px 17px;line-height:1.55}
+@media(max-width:900px){header.top.schedule-top{grid-template-columns:1fr auto;padding:15px;border-radius:16px}.schedule-brand{grid-column:1/-1}.schedule-heading{grid-column:1/-1;grid-row:2}header.top.schedule-top a.back{grid-column:1/-1;justify-self:start}.panel{border-radius:16px}}
+@media(max-width:480px){header.top.schedule-top{gap:12px}.schedule-heading h1{font-size:24px}.schedule-brand small{font-size:10px}.panel{border-radius:14px}.panel h2{padding:14px 14px 0}.panel .sub{padding-left:14px;padding-right:14px}.search{padding-left:14px;padding-right:14px}.bar{padding:13px}.bar .search{min-width:100%}}
 </style>
 </head>
 <body>
 <div class="wrap">
- <header class="top">
-  <h1>BMS Base Schedule</h1>
-  <span class="crumb">Daily Operations · Reference Library</span>
-  <a class="back" href="index.html">← Back to BMS SUPERAPPS</a>
+ <header class="top schedule-top">
+  <a class="schedule-brand" href="index.html" aria-label="Back to BMS SUPERAPPS home">
+   <img src="https://cdn.brandfetch.io/idym1nRWUa/w/2048/h/2048/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1783323508223" alt="Exchange 106">
+   <span><strong>BMS SUPERAPPS</strong><small>Exchange 106 · Building Operations</small></span>
+  </a>
+  <div class="schedule-heading"><span class="crumb">DAILY OPERATIONS · REFERENCE LIBRARY</span><h1>BMS Base Schedule</h1><p>Reference jadual asas sistem dan pemetaan Construction Floor ↔ Marketing Floor.</p></div>
+  <a class="back" href="index.html">← Back to Home</a>
  </header>
 
  <div class="layout">
