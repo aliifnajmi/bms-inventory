@@ -7,6 +7,7 @@
     if (document.getElementById('txnReportStyles')) return;
     var style = document.createElement('style'); style.id = 'txnReportStyles';
     style.textContent = '.txn-report-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px;padding:12px;border:1px solid var(--border);border-radius:10px;background:#f8fafc}.txn-report-controls label{font-weight:700;font-size:12px}.txn-report-controls select{padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:#fff}.txn-report-controls span{font-size:12px;color:var(--muted)}.txn-report-paper{margin:0 auto 14px;background:#fff;color:#172033;border:1px solid #dbe3ec;border-radius:12px;padding:20px;box-shadow:0 5px 20px rgba(15,23,42,.07);box-sizing:border-box}.txn-paper-a4{width:100%;max-width:740px;min-height:600px}.txn-paper-square{width:min(100%,420px);min-height:0;padding:14px}.txn-report-heading{display:flex;justify-content:space-between;gap:14px;padding-bottom:14px;margin-bottom:14px;border-bottom:2px solid #1c375a}.txn-report-heading small{font-size:9px;letter-spacing:.08em;color:#64748b;font-weight:800}.txn-report-heading h2{font-size:17px;line-height:1.25;margin:6px 0;color:#1c375a}.txn-report-heading p{font-size:12px;color:#64748b;margin:0}.txn-report-code{text-align:right;min-width:92px}.txn-report-code>strong{display:block;font-size:12px;overflow-wrap:anywhere}.txn-report-code>span{display:block;font-size:9px;color:#64748b;margin:3px 0 8px}.txn-qr-box{width:84px;height:84px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:4px;box-sizing:border-box;margin-left:auto}.txn-qr-box canvas,.txn-qr-box img{max-width:100%;max-height:100%}.txn-signatures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:28px;padding-top:12px;border-top:1px solid #cbd5e1}.txn-signature{padding-top:28px;border-bottom:1px solid #64748b;min-height:1px}.txn-signature-label{font-size:9px;color:#475569;margin-top:6px}.txn-company-logo{max-width:115px;max-height:48px;object-fit:contain;object-position:left center;margin-bottom:7px}.txn-paper-square .txn-signatures{grid-template-columns:1fr;gap:10px}.txn-paper-square .txn-signature{padding-top:16px}.txn-paper-square .txn-report-heading h2{font-size:13px}.txn-paper-square .txn-report-heading{gap:8px}.txn-paper-square .txn-detail-grid{grid-template-columns:1fr;padding:10px;gap:9px}.txn-paper-square .txn-detail-grid .full{grid-column:auto}.txn-paper-square .txn-preview-top{margin-bottom:9px}@media(max-width:600px){.txn-report-paper{padding:12px}.txn-paper-a4{min-height:0}.txn-report-heading h2{font-size:14px}.txn-report-code{min-width:78px}}';
+    style.textContent += '.txn-general-reference{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:18px;padding:12px 14px;border:1px solid #dbe3ec;border-radius:10px;background:#f8fafc}.txn-general-reference strong,.txn-general-reference span,.txn-general-reference small{display:block}.txn-general-reference strong{font-size:11px;color:#1c375a;letter-spacing:.06em}.txn-general-reference span{font-size:10px;font-weight:700;color:#334155;margin-top:3px}.txn-general-reference small{font-size:9px;color:#64748b;margin-top:3px}.txn-general-qr{width:66px;height:66px;flex:none;padding:3px;border:1px solid #e2e8f0;border-radius:6px;background:#fff}.txn-general-qr canvas,.txn-general-qr img{max-width:100%;max-height:100%}@media(max-width:480px){.txn-general-reference{padding:9px}.txn-general-qr{width:58px;height:58px}}';
     document.head.appendChild(style);
   }
   function openTxnPreview(t, refresh) {
@@ -15,7 +16,7 @@
     var root = document.getElementById('modalRoot');
     var reference = String(t.reference || '').trim();
     var body = '<div class="txn-report-controls"><label for="txnReportSize">Report layout</label><select id="txnReportSize"><option value="a4">A4 — Print / File</option><option value="square">Square — Compact card</option></select><span>System Transaction ID is generated automatically. Enter the maintenance Work Order / Job Ref separately when available.</span></div>' +
-      '<div class="txn-report-paper txn-paper-a4" id="txnReportPaper"><div class="txn-report-heading"><div><img class="txn-company-logo" src="https://cdn.brandfetch.io/idym1nRWUa/w/2048/h/2048/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1783323508223" alt="Exchange 106 logo"><small>EXCHANGE 106 · BUILDING MANAGEMENT OPERATIONS</small><h2>WORK ORDER / TRANSACTION REPORT</h2><p>Exchange 106 · Building Management Operations · Stock movement record</p></div><div class="txn-report-code"><strong>' + txnEsc(t.work_order || t.transaction_id) + '</strong><span>WORK ORDER / JOB REF</span><span>SYSTEM TXN: ' + txnEsc(t.transaction_id) + '</span><div class="txn-qr-box" id="txnQrCode" aria-label="QR code linking to this transaction"></div><span>Scan to open transaction</span><div id="txnGeneralQrCode" style="display:none" aria-hidden="true"></div></div></div>' +
+      '<div class="txn-report-paper txn-paper-a4" id="txnReportPaper"><div class="txn-report-heading"><div><img class="txn-company-logo" src="https://cdn.brandfetch.io/idym1nRWUa/w/2048/h/2048/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1783323508223" alt="Exchange 106 logo"><small>EXCHANGE 106 · BUILDING MANAGEMENT OPERATIONS</small><h2>WORK ORDER / TRANSACTION REPORT</h2><p>Exchange 106 · Building Management Operations · Stock movement record</p></div><div class="txn-report-code"><strong>' + txnEsc(t.work_order || t.transaction_id) + '</strong><span>WORK ORDER / JOB REF</span><span>SYSTEM TXN: ' + txnEsc(t.transaction_id) + '</span><div class="txn-qr-box" id="txnQrCode" aria-label="QR code linking to this transaction"></div><span>Scan to open transaction</span></div></div>' +
       '<div class="txn-preview"><div class="txn-preview-top"><strong>' + txnEsc(t.transaction_id) + '</strong><span>' + txnEsc(t.transaction_date) + '</span></div>' +
       '<div class="txn-detail-grid">' +
       '<div><span>Type</span><strong>' + txnEsc(t.transaction_type) + '</strong></div>' +
@@ -29,7 +30,7 @@
       '<div><span>Work Order</span><strong>' + txnEsc(t.work_order || '—') + '</strong></div>' +
       '<div><span>Area</span><strong>' + txnEsc(t.area || '—') + '</strong></div>' +
       '<div class="full"><span>Reason / Remarks</span><strong>' + txnEsc([t.reason,t.remarks].filter(Boolean).join(' · ') || '—') + '</strong></div></div>' +
-      '<div class="txn-signatures"><div><div class="txn-signature"></div><div class="txn-signature-label">Prepared By / Technician</div></div><div><div class="txn-signature"></div><div class="txn-signature-label">Checked By / Supervisor</div></div><div><div class="txn-signature"></div><div class="txn-signature-label">Approved By / Engineer</div></div></div><p style="font-size:9px;color:#64748b;margin-top:14px">Generated from the Exchange 106 BMS SUPERAPPS transaction record. Signatures confirm the details above have been checked.</p><div class="txn-reference-preview" id="txnRefPreview"></div>' +
+      '<div class="txn-signatures"><div><div class="txn-signature"></div><div class="txn-signature-label">Prepared By / Technician</div></div><div><div class="txn-signature"></div><div class="txn-signature-label">Checked By / Supervisor</div></div><div><div class="txn-signature"></div><div class="txn-signature-label">Approved By / Engineer</div></div></div><div class="txn-general-reference"><div><strong>BMS SUPERAPPS</strong><span>General system reference</span><small>Scan for the BMS SUPERAPPS repository and project information</small></div><div class="txn-general-qr" id="txnGeneralQrCode" aria-label="QR code for BMS SUPERAPPS general reference"></div></div><p style="font-size:9px;color:#64748b;margin-top:14px">Generated from the Exchange 106 BMS SUPERAPPS transaction record. Signatures confirm the details above have been checked.</p><div class="txn-reference-preview" id="txnRefPreview"></div>' +
       '<section class="txn-attachments"><div class="txn-attachments-head"><div><h4>Attachments</h4><p>Upload DO, PO, work order, photos or other evidence (10 MB max per file).</p></div><span class="badge normal" id="txnAttachCount">Loading…</span></div>' +
       '<div class="txn-upload-row"><input type="file" id="txnAttachmentInput" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.csv,.doc,.docx,.xls,.xlsx"><button type="button" class="btn btn-primary" id="txnAttachmentUpload">' + txnIcon() + ' Upload files</button></div>' +
       '<div id="txnAttachmentList" class="txn-attachment-list">Loading attachments…</div></section></div></div>';
@@ -39,7 +40,8 @@
     if (qrBox && window.QRCode) new QRCode(qrBox, { text: txnUrl, width: 76, height: 76, correctLevel: QRCode.CorrectLevel.M });
     else if (qrBox) qrBox.innerHTML = '<span style="font-size:8px;text-align:center;color:#b91c1c">QR library unavailable</span>';
     var generalQrBox = document.getElementById('txnGeneralQrCode');
-    if (generalQrBox && window.QRCode) new QRCode(generalQrBox, { text: 'https://github.com/aliifnajmi/bms-inventory', width: 96, height: 96, correctLevel: QRCode.CorrectLevel.M });
+    if (generalQrBox && window.QRCode) new QRCode(generalQrBox, { text: 'https://github.com/aliifnajmi/bms-inventory', width: 60, height: 60, correctLevel: QRCode.CorrectLevel.M });
+    else if (generalQrBox) generalQrBox.textContent = 'QR unavailable';
     function close() { root.innerHTML = ''; }
     document.getElementById('txnModalClose').onclick = close; document.getElementById('txnModalDone').onclick = close;
     var pdfButton = document.getElementById('txnDownloadPdf');
@@ -69,16 +71,25 @@
       if (typeof doc.autoTable === 'function') doc.autoTable({startY:margin+31,margin:{left:margin,right:margin},tableWidth:usableWidth,head:[['Field','Work Order Details']],body:rows.map(function(r){return [String(r[0]),String(r[1]||'—')];}),styles:{fontSize:size==='square'?5.5:9,cellPadding:size==='square'?1.5:3,overflow:'linebreak'},headStyles:{fillColor:[28,55,90]},columnStyles:{0:{cellWidth:size==='square'?29:45},1:{cellWidth:'auto'}}});
       else { var y=margin+35; rows.forEach(function(r){doc.setFontSize(7);doc.text(String(r[0])+': '+String(r[1]||'—').slice(0,70),margin,y); y+=5; if(y>doc.internal.pageSize.getHeight()-margin){doc.addPage();y=margin;}}); }
       var qrCanvas=document.querySelector('#txnQrCode canvas'); if(qrCanvas){try{doc.addImage(qrCanvas.toDataURL('image/png'),'PNG',pageWidth-margin-(size==='square'?20:25),margin+2,size==='square'?17:22,size==='square'?17:22);}catch(_){}}
-      var signY=(doc.lastAutoTable&&doc.lastAutoTable.finalY?doc.lastAutoTable.finalY:margin+80)+18;if(signY>doc.internal.pageSize.getHeight()-38){doc.addPage();signY=22;}var signGap=usableWidth/3;[['Prepared By / Technician',0],['Checked By / Supervisor',1],['Approved By / Engineer',2]].forEach(function(sg){var x=margin+sg[1]*signGap;doc.setDrawColor(100,116,139);doc.line(x,signY,x+signGap-5,signY);doc.setFontSize(7);doc.text(sg[0],x,signY+5);});
-      // General BMS SUPERAPPS reference footer; the existing transaction QR remains unchanged.
-      var generalQrCanvas=document.querySelector('#txnGeneralQrCode canvas');
-      var footerY=doc.internal.pageSize.getHeight()-margin-2;
-      var footerQrSize=size==='square'?10:12;
-      doc.setDrawColor(203,213,225);doc.setLineWidth(.25);doc.line(margin,footerY-14,pageWidth-margin,footerY-14);
-      doc.setTextColor(71,85,105);doc.setFontSize(size==='square'?4.5:6.5);
-      doc.text('BMS SUPERAPPS — Building Management System Operations Platform',margin,footerY-8,{maxWidth:usableWidth-footerQrSize-5});
-      doc.text('General reference: github.com/aliifnajmi/bms-inventory',margin,footerY-4,{maxWidth:usableWidth-footerQrSize-5});
-      if(generalQrCanvas){try{doc.addImage(generalQrCanvas.toDataURL('image/png'),'PNG',pageWidth-margin-footerQrSize,footerY-footerQrSize,footerQrSize,footerQrSize);}catch(_){}}
+      var signY=(doc.lastAutoTable&&doc.lastAutoTable.finalY?doc.lastAutoTable.finalY:margin+80)+18;if(signY>doc.internal.pageSize.getHeight()-28){doc.addPage();signY=22;}var signGap=usableWidth/3;[['Prepared By / Technician',0],['Checked By / Supervisor',1],['Approved By / Engineer',2]].forEach(function(sg){var x=margin+sg[1]*signGap;doc.setDrawColor(100,116,139);doc.line(x,signY,x+signGap-5,signY);doc.setFontSize(7);doc.text(sg[0],x,signY+5);});
+      // General BMS SUPERAPPS reference QR in the footer; preserve the existing transaction QR.
+      var refHost=document.createElement('div');
+      refHost.style.cssText='position:fixed;left:-10000px;top:0;width:80px;height:80px;overflow:hidden;';
+      document.body.appendChild(refHost);
+      if(window.QRCode){
+        new QRCode(refHost,{text:'https://github.com/aliifnajmi/bms-inventory',width:72,height:72,correctLevel:QRCode.CorrectLevel.M});
+        var refCanvas=refHost.querySelector('canvas');
+        var refPageHeight=doc.internal.pageSize.getHeight();
+        var refSize=size==='square'?9:12;
+        var refY=refPageHeight-margin-refSize;
+        var refX=pageWidth-margin-refSize;
+        if(refCanvas){try{doc.addImage(refCanvas.toDataURL('image/png'),'PNG',refX,refY,refSize,refSize);}catch(_){}}
+        doc.setFontSize(size==='square'?4.3:6);
+        doc.setTextColor(71,85,105);
+        doc.text('BMS SUPERAPPS — Building Management System Operations Platform',margin,refPageHeight-margin-3,{maxWidth:Math.max(20,usableWidth-refSize-4)});
+        doc.setTextColor(0,0,0);
+      }
+      refHost.remove();
       doc.save('exchange106-work-order-'+String(t.work_order||t.transaction_id||'record').replace(/[^a-z0-9_-]+/gi,'-')+'-'+size+'.pdf');
     };
     var sizeSelect = document.getElementById('txnReportSize');
