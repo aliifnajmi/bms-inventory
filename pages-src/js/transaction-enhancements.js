@@ -15,7 +15,7 @@
     var root = document.getElementById('modalRoot');
     var reference = String(t.reference || '').trim();
     var body = '<div class="txn-report-controls"><label for="txnReportSize">Report layout</label><select id="txnReportSize"><option value="a4">A4 — Print / File</option><option value="square">Square — Compact card</option></select><span>Transaction ID is used as the Work Order reference.</span></div>' +
-      '<div class="txn-report-paper txn-paper-a4" id="txnReportPaper"><div class="txn-report-heading"><div><img class="txn-company-logo" src="https://raw.githubusercontent.com/aliifnajmi/bms-inventory/main/docs/images/mulia.png" alt="Mulia Property Development logo"><small>MULIA PROPERTY DEVELOPMENT SDN BHD · MULIA GROUP</small><h2>WORK ORDER / TRANSACTION REPORT</h2><p>Building Management System · Stock movement record</p></div><div class="txn-report-code"><strong>' + txnEsc(t.transaction_id) + '</strong><span>WORK ORDER ID</span><div class="txn-qr-box" id="txnQrCode" aria-label="QR code linking to this transaction"></div><span>Scan to open transaction</span></div></div>' +
+      '<div class="txn-report-paper txn-paper-a4" id="txnReportPaper"><div class="txn-report-heading"><div><img class="txn-company-logo" src="https://raw.githubusercontent.com/aliifnajmi/bms-inventory/main/docs/images/mulia.png" alt="Mulia Property Development logo"><small>MULIA PROPERTY DEVELOPMENT SDN BHD · MULIA GROUP</small><h2>WORK ORDER / TRANSACTION REPORT</h2><p>Building Management System · Stock movement record</p></div><div class="txn-report-code"><strong>' + txnEsc(t.transaction_id) + '</strong><span>WORK ORDER ID</span><div class="txn-qr-box" id="txnQrCode" aria-label="QR code linking to this transaction"></div><span>Scan to open transaction</span><div id="txnGeneralQrCode" style="display:none" aria-hidden="true"></div></div></div>' +
       '<div class="txn-preview"><div class="txn-preview-top"><strong>' + txnEsc(t.transaction_id) + '</strong><span>' + txnEsc(t.transaction_date) + '</span></div>' +
       '<div class="txn-detail-grid">' +
       '<div><span>Type</span><strong>' + txnEsc(t.transaction_type) + '</strong></div>' +
@@ -38,6 +38,8 @@
     var qrBox = document.getElementById('txnQrCode');
     if (qrBox && window.QRCode) new QRCode(qrBox, { text: txnUrl, width: 76, height: 76, correctLevel: QRCode.CorrectLevel.M });
     else if (qrBox) qrBox.innerHTML = '<span style="font-size:8px;text-align:center;color:#b91c1c">QR library unavailable</span>';
+    var generalQrBox = document.getElementById('txnGeneralQrCode');
+    if (generalQrBox && window.QRCode) new QRCode(generalQrBox, { text: 'https://github.com/aliifnajmi/bms-inventory', width: 96, height: 96, correctLevel: QRCode.CorrectLevel.M });
     function close() { root.innerHTML = ''; }
     document.getElementById('txnModalClose').onclick = close; document.getElementById('txnModalDone').onclick = close;
     var pdfButton = document.getElementById('txnDownloadPdf');
@@ -67,7 +69,16 @@
       if (typeof doc.autoTable === 'function') doc.autoTable({startY:margin+21,margin:{left:margin,right:margin},tableWidth:usableWidth,head:[['Field','Work Order Details']],body:rows.map(function(r){return [String(r[0]),String(r[1]||'—')];}),styles:{fontSize:size==='square'?5.5:9,cellPadding:size==='square'?1.5:3,overflow:'linebreak'},headStyles:{fillColor:[28,55,90]},columnStyles:{0:{cellWidth:size==='square'?29:45},1:{cellWidth:'auto'}}});
       else { var y=margin+25; rows.forEach(function(r){doc.setFontSize(7);doc.text(String(r[0])+': '+String(r[1]||'—').slice(0,70),margin,y); y+=5; if(y>doc.internal.pageSize.getHeight()-margin){doc.addPage();y=margin;}}); }
       var qrCanvas=document.querySelector('#txnQrCode canvas'); if(qrCanvas){try{doc.addImage(qrCanvas.toDataURL('image/png'),'PNG',pageWidth-margin-(size==='square'?20:25),margin+2,size==='square'?17:22,size==='square'?17:22);}catch(_){}}
-      var signY=(doc.lastAutoTable&&doc.lastAutoTable.finalY?doc.lastAutoTable.finalY:margin+80)+18;if(signY>doc.internal.pageSize.getHeight()-28){doc.addPage();signY=22;}var signGap=usableWidth/3;[['Prepared By / Technician',0],['Checked By / Supervisor',1],['Approved By / Engineer',2]].forEach(function(sg){var x=margin+sg[1]*signGap;doc.setDrawColor(100,116,139);doc.line(x,signY,x+signGap-5,signY);doc.setFontSize(7);doc.text(sg[0],x,signY+5);});
+      var signY=(doc.lastAutoTable&&doc.lastAutoTable.finalY?doc.lastAutoTable.finalY:margin+80)+18;if(signY>doc.internal.pageSize.getHeight()-38){doc.addPage();signY=22;}var signGap=usableWidth/3;[['Prepared By / Technician',0],['Checked By / Supervisor',1],['Approved By / Engineer',2]].forEach(function(sg){var x=margin+sg[1]*signGap;doc.setDrawColor(100,116,139);doc.line(x,signY,x+signGap-5,signY);doc.setFontSize(7);doc.text(sg[0],x,signY+5);});
+      // General BMS SUPERAPPS reference footer; the existing transaction QR remains unchanged.
+      var generalQrCanvas=document.querySelector('#txnGeneralQrCode canvas');
+      var footerY=doc.internal.pageSize.getHeight()-margin-2;
+      var footerQrSize=size==='square'?10:12;
+      doc.setDrawColor(203,213,225);doc.setLineWidth(.25);doc.line(margin,footerY-14,pageWidth-margin,footerY-14);
+      doc.setTextColor(71,85,105);doc.setFontSize(size==='square'?4.5:6.5);
+      doc.text('BMS SUPERAPPS — Building Management System Operations Platform',margin,footerY-8,{maxWidth:usableWidth-footerQrSize-5});
+      doc.text('General reference: github.com/aliifnajmi/bms-inventory',margin,footerY-4,{maxWidth:usableWidth-footerQrSize-5});
+      if(generalQrCanvas){try{doc.addImage(generalQrCanvas.toDataURL('image/png'),'PNG',pageWidth-margin-footerQrSize,footerY-footerQrSize,footerQrSize,footerQrSize);}catch(_){}}
       doc.save(String(t.transaction_id||'work-order')+'-'+size+'.pdf');
     };
     var sizeSelect = document.getElementById('txnReportSize');
