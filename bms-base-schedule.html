@@ -46,14 +46,53 @@ mark{background:var(--hl);color:inherit;padding:0 1px;border-radius:2px}
  .floors{max-height:60vh}
  .scroll{max-height:none}
 }
+
+/* Exchange 106 BMS SUPERAPPS visual system — content/data preserved. */
+:root{--bg:#edf3f7;--card:#fff;--ink:#142b3a;--mute:#607586;--line:#dce7ed;--accent:#0d9488;--accent-ink:#fff;--hl:#d1fae5;--head:#edf5f7}
+body{background:radial-gradient(ellipse at 92% 0%,rgba(13,148,136,.12),transparent 32%),linear-gradient(180deg,#edf4f7,#f5f7fa 50%,#edf3f7);color:var(--ink)}
+.wrap{max-width:1500px;padding:22px clamp(12px,2vw,28px) 32px}
+header.top{display:grid;grid-template-columns:auto minmax(220px,1fr) auto;gap:20px;align-items:center;padding:17px 20px;margin-bottom:18px;background:linear-gradient(120deg,#0d2433,#123d50 66%,#0f766e);border:1px solid rgba(255,255,255,.13);border-radius:20px;box-shadow:0 15px 36px rgba(13,36,51,.13);color:#fff}
+.brand-home{display:flex;align-items:center;gap:11px;min-width:0;color:#fff;text-decoration:none;border-radius:12px;padding:4px}
+.brand-home:hover{background:#ffffff10;text-decoration:none}
+.brand-home img{width:43px;height:43px;object-fit:cover;border-radius:12px;border:1px solid #ffffff36}
+.brand-home span{display:flex;flex-direction:column;gap:3px;min-width:0}
+.brand-home strong{font-size:13px;letter-spacing:.035em;white-space:nowrap}
+.brand-home small{font-size:10px;line-height:1.4;color:#bdd3df;max-width:210px}
+.page-heading .crumb{display:inline-block;color:#8debd3;font-size:10px;font-weight:900;letter-spacing:.14em;margin-bottom:4px}
+.page-heading h1{font-size:clamp(21px,2.5vw,29px);line-height:1.15;letter-spacing:-.035em;color:#fff}
+.page-heading p{margin-top:5px;color:#c6dbe5;font-size:12px}
+header.top a.back{margin-left:0;padding:10px 13px;border:1px solid #ffffff38;border-radius:11px;background:#ffffff0d;color:#fff;font-size:12px;white-space:nowrap}
+header.top a.back:hover{background:#ffffff19;text-decoration:none}
+.layout{grid-template-columns:minmax(265px,330px) minmax(0,1fr);gap:18px}
+.panel{border:1px solid #e1eaf0;border-radius:17px;box-shadow:0 8px 24px rgba(18,47,65,.055);background:rgba(255,255,255,.96)}
+.panel h2{padding:17px 18px 0;font-size:14px;letter-spacing:-.015em}
+.panel .sub{padding:5px 18px 14px;font-size:12px;line-height:1.55}
+.search{padding:0 18px 14px}
+.search input{padding:11px 13px;border:1px solid #d8e4ea;border-radius:11px;background:#f8fbfc;transition:border-color .2s,box-shadow .2s}
+.search input:focus{outline:none;border-color:#0d9488;box-shadow:0 0 0 3px #0d94881c}
+.floors,.scroll{border-top:1px solid #e5edf1}
+thead th{background:#eff6f8;color:#345163;font-size:11px;font-weight:800;letter-spacing:.02em;padding:10px 12px}
+td,th{padding:9px 12px;border-bottom:1px solid #edf1f4}
+tbody tr:hover td{background:#f6fbfa}
+.zone-row td{background:#eaf4f5;color:#557080}
+.bar{padding:16px 18px;gap:12px}
+.bar .search{padding:0}
+.count{display:inline-flex;padding:7px 10px;border-radius:999px;background:#ecfdf5;color:#047857;font-size:11px;font-weight:800}
+.note{background:#f8fbfc;color:#61798a;line-height:1.55}
+mark{background:#ccfbf1;color:#134e4a}
+@media(max-width:900px){.wrap{padding:12px}.layout{grid-template-columns:1fr}.floors{max-height:45vh}header.top{grid-template-columns:1fr auto;gap:12px;padding:15px}.brand-home{grid-column:1/-1}.page-heading{grid-column:1/-1;grid-row:2}.back{grid-column:1/-1;justify-self:start}.scroll{max-height:65vh}}
+@media(max-width:480px){header.top{border-radius:15px}.brand-home small{max-width:240px}.page-heading h1{font-size:24px}.panel{border-radius:14px}.panel h2{padding:14px 14px 0}.panel .sub{padding-left:14px;padding-right:14px}.search{padding-left:14px;padding-right:14px}.bar{padding:13px}.bar .search{min-width:100%}.count{margin-left:0}}
 </style>
 </head>
 <body>
 <div class="wrap">
  <header class="top">
-  <h1>BMS Base Schedule</h1>
-  <span class="crumb">Daily Operation</span>
-  <a class="back" href="index.html">Kembali ke BMS SUPERAPPS</a>
+  <a class="brand-home" href="index.html" aria-label="Back to BMS SUPERAPPS home">
+   <img src="https://cdn.brandfetch.io/idym1nRWUa/w/2048/h/2048/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1783323508223" alt="Exchange 106 logo">
+   <span><strong>BMS SUPERAPPS</strong><small>Building Management Operations Platform</small></span>
+  </a>
+  <div class="page-heading"><span class="crumb">DAILY OPERATIONS</span><h1>BMS Base Schedule</h1><p>Reference jadual asas sistem dan pemetaan Construction Floor ↔ Marketing Floor.</p></div>
+  <a class="back" href="index.html">← Back to Home</a>
  </header>
 
  <div class="layout">
