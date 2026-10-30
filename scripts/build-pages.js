@@ -44,6 +44,7 @@ copy(path.join(ROOT, 'public/js/fcu-extension.js'), path.join(DOCS, 'js/fcu-exte
 copy(path.join(ROOT, 'public/js/ot-module.js'), path.join(DOCS, 'js/ot-module.js'));
 copy(path.join(ROOT, 'public/js/report-centre.js'), path.join(DOCS, 'js/report-centre.js'));
 copy(path.join(ROOT, 'public/images/exchange106-favicon.svg'), path.join(DOCS, 'images/exchange106-favicon.svg'));
+copy(path.join(ROOT, 'bms-base-schedule.html'), path.join(DOCS, 'bms-base-schedule.html'));
 
 /* 3. demo dataset, generated from seed.js so it never drifts */
 const now = new Date().toISOString();

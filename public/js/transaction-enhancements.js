@@ -68,6 +68,24 @@
       else { var y=margin+35; rows.forEach(function(r){doc.setFontSize(7);doc.text(String(r[0])+': '+String(r[1]||'—').slice(0,70),margin,y); y+=5; if(y>doc.internal.pageSize.getHeight()-margin){doc.addPage();y=margin;}}); }
       var qrCanvas=document.querySelector('#txnQrCode canvas'); if(qrCanvas){try{doc.addImage(qrCanvas.toDataURL('image/png'),'PNG',pageWidth-margin-(size==='square'?20:25),margin+2,size==='square'?17:22,size==='square'?17:22);}catch(_){}}
       var signY=(doc.lastAutoTable&&doc.lastAutoTable.finalY?doc.lastAutoTable.finalY:margin+80)+18;if(signY>doc.internal.pageSize.getHeight()-28){doc.addPage();signY=22;}var signGap=usableWidth/3;[['Prepared By / Technician',0],['Checked By / Supervisor',1],['Approved By / Engineer',2]].forEach(function(sg){var x=margin+sg[1]*signGap;doc.setDrawColor(100,116,139);doc.line(x,signY,x+signGap-5,signY);doc.setFontSize(7);doc.text(sg[0],x,signY+5);});
+      // General BMS SUPERAPPS reference QR in the footer; preserve the existing transaction QR.
+      var refHost=document.createElement('div');
+      refHost.style.cssText='position:fixed;left:-10000px;top:0;width:80px;height:80px;overflow:hidden;';
+      document.body.appendChild(refHost);
+      if(window.QRCode){
+        new QRCode(refHost,{text:'https://github.com/aliifnajmi/bms-inventory',width:72,height:72,correctLevel:QRCode.CorrectLevel.M});
+        var refCanvas=refHost.querySelector('canvas');
+        var refPageHeight=doc.internal.pageSize.getHeight();
+        var refSize=size==='square'?9:12;
+        var refY=refPageHeight-margin-refSize;
+        var refX=pageWidth-margin-refSize;
+        if(refCanvas){try{doc.addImage(refCanvas.toDataURL('image/png'),'PNG',refX,refY,refSize,refSize);}catch(_){}}
+        doc.setFontSize(size==='square'?4.3:6);
+        doc.setTextColor(71,85,105);
+        doc.text('BMS SUPERAPPS — Building Management System Operations Platform',margin,refPageHeight-margin-3,{maxWidth:Math.max(20,usableWidth-refSize-4)});
+        doc.setTextColor(0,0,0);
+      }
+      refHost.remove();
       doc.save('exchange106-work-order-'+String(t.work_order||t.transaction_id||'record').replace(/[^a-z0-9_-]+/gi,'-')+'-'+size+'.pdf');
     };
     var sizeSelect = document.getElementById('txnReportSize');
