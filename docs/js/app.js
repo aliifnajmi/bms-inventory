@@ -440,7 +440,7 @@ function openAdjustmentModal() {
 
 /* ---------- navigation ---------- */
 const NAV = [
-  { section: 'Operations' },
+  { section: 'Inventory Management System' },
   { route: '/', icon: 'dashboard', label: 'Dashboard' },
   { route: '/inventory', icon: 'box', label: 'Inventory' },
   { route: '/stock-in', icon: 'download', label: 'Stock In' },
@@ -451,6 +451,7 @@ const NAV = [
   { route: '/reports', icon: 'chart', label: 'Reports' },
   { route: '/settings', icon: 'sliders', label: 'Settings' },
   { section: 'Daily Operations' },
+  { route: '/pending-tasks', icon: 'list', label: 'BMS Pending Task' },
   { route: '/daily-operations/fcu-extension', icon: 'check', label: 'Tenant FCU Extension' },
   { href: 'bms-base-schedule.html', icon: 'list', label: 'BMS Base Schedule' },
   { section: 'Overtime Management' },
@@ -511,6 +512,7 @@ const routes = [
   { rx: /^\/settings$/, title: 'Settings', render: renderSettings },
   { rx: /^\/daily-operations\/fcu-extension$/, title: 'Tenant FCU Extension', render: () => window.BMSFcuExtension.render() },
   { rx: /^\/overtime$/, title: 'Overtime Management', render: renderOvertimeModule },
+  { rx: /^\/pending-tasks$/, title: 'BMS Pending Task', render: () => window.BMSPendingTasks.render() },
   { rx: /^\/items\/(\d+)$/, title: 'Item Details', render: renderItemDetail },
 ];
 
