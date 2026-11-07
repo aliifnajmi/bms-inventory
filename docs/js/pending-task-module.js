@@ -135,7 +135,7 @@ function openTaskModal(task,defaultStatus) {
   e.preventDefault();
   const data=Object.fromEntries(new FormData(e.currentTarget));
   if(!data.task_title.trim()||!data.due_date){notify('Title and due date are required.',true);return;}
-  if(data.task_type==='Event'&&!data.due_time){notify('Add an event start time.',true);return;}
+  if(data.record_type==='Event'&&!data.due_time){notify('Add an event start time.',true);return;} if(data.record_type==='Event'&&data.event_end_at&&new Date(data.event_end_at)<new Date(data.due_date+'T'+data.due_time)){notify('Event end must be after its start time.',true);return;}
   if(data.event_end_at&&new Date(data.event_end_at)<=new Date(data.due_date+'T'+(data.due_time||'00:00'))){notify('Event end must be later than its start.',true);return;}
   if(data.reminder_enabled==='On'&&!data.reminder_at){notify('Set a reminder date and time, or switch browser reminder Off.',true);return;}
   await saveTask(item.id?item:null,data,modal);
