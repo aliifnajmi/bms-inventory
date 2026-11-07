@@ -453,7 +453,7 @@ const NAV = [
   { section: 'Daily Operations' },
   { route: '/pending-tasks', icon: 'list', label: 'BMS Operations Board' },
   { route: '/daily-operations/fcu-extension', icon: 'check', label: 'Tenant FCU Extension' },
-  { href: 'bms-base-schedule.html', icon: 'list', label: 'BMS Base Schedule' },
+  { route: '/daily-operations/base-schedule', icon: 'list', label: 'BMS Base Schedule' },
   { section: 'Overtime Management' },
   { route: '/overtime', icon: 'chart', label: 'OT Management' },
 ];
@@ -513,6 +513,7 @@ const routes = [
   { rx: /^\/daily-operations\/fcu-extension$/, title: 'Tenant FCU Extension', render: () => window.BMSFcuExtension.render() },
   { rx: /^\/overtime$/, title: 'Overtime Management', render: renderOvertimeModule },
   { rx: /^\/pending-tasks$/, title: 'BMS Operations Board', render: () => window.BMSPendingTasks.render() },
+  { rx: /^\/daily-operations\/base-schedule$/, title: 'BMS Base Schedule', render: () => window.BMSBaseSchedule.render() },
   { rx: /^\/items\/(\d+)$/, title: 'Item Details', render: renderItemDetail },
 ];
 
