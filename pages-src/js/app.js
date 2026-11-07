@@ -513,7 +513,31 @@ const routes = [
   { rx: /^\/daily-operations\/fcu-extension$/, title: 'Tenant FCU Extension', render: () => window.BMSFcuExtension.render() },
   { rx: /^\/overtime$/, title: 'Overtime Management', render: renderOvertimeModule },
   { rx: /^\/pending-tasks$/, title: 'BMS Operations Board', render: () => window.BMSPendingTasks.render() },
-  { rx: /^\/daily-operations\/base-schedule$/, title: 'BMS Base Schedule', render: () => window.BMSBaseSchedule.render() },
+  {
+    rx: /^\/daily-operations\/base-schedule$/,
+    title: 'BMS Base Schedule',
+    render: async () => {
+      let module = window.BMSBaseSchedule;
+      if (!module || typeof module.render !== 'function') {
+        const appScript = Array.from(document.scripts).find((script) => /(?:^|\/)app\.js(?:\?|$)/.test(script.src));
+        const moduleUrl = appScript
+          ? new URL('base-schedule-module.js?v=20261108-base-schedule-fix1', appScript.src).href
+          : 'js/base-schedule-module.js?v=20261108-base-schedule-fix1';
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = moduleUrl;
+          script.onload = resolve;
+          script.onerror = () => reject(new Error('Unable to load the BMS Base Schedule module. Please refresh the page and try again.'));
+          document.head.appendChild(script);
+        });
+        module = window.BMSBaseSchedule;
+      }
+      if (!module || typeof module.render !== 'function') {
+        throw new Error('BMS Base Schedule module loaded, but its render function is unavailable. Please refresh the page.');
+      }
+      return module.render();
+    },
+  },
   { rx: /^\/items\/(\d+)$/, title: 'Item Details', render: renderItemDetail },
 ];
 
