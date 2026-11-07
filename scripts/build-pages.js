@@ -43,6 +43,7 @@ copy(path.join(ROOT, 'public/js/transaction-enhancements.js'), path.join(DOCS, '
 copy(path.join(ROOT, 'public/js/fcu-extension.js'), path.join(DOCS, 'js/fcu-extension.js'));
 copy(path.join(ROOT, 'public/js/ot-module.js'), path.join(DOCS, 'js/ot-module.js'));
 copy(path.join(ROOT, 'public/js/pending-task-module.js'), path.join(DOCS, 'js/pending-task-module.js'));
+copy(path.join(ROOT, 'public/js/base-schedule-module.js'), path.join(DOCS, 'js/base-schedule-module.js'));
 copy(path.join(ROOT, 'public/js/report-centre.js'), path.join(DOCS, 'js/report-centre.js'));
 copy(path.join(ROOT, 'public/images/exchange106-favicon.svg'), path.join(DOCS, 'images/exchange106-favicon.svg'));
 copy(path.join(ROOT, 'bms-base-schedule.html'), path.join(DOCS, 'bms-base-schedule.html'));
